@@ -1,0 +1,107 @@
+@{
+    ViewData["Title"] = "Gà rán GaRan - Đặt món trực tuyến";
+    var categories = ViewBag.Categories as List<DanhMuc> ?? new();
+    var featured = ViewBag.Featured as List<MonAn> ?? new();
+    var combos = ViewBag.Combos as List<MonAn> ?? new();
+    var reviews = ViewBag.Reviews as List<DanhGia> ?? new();
+}
+
+<section class="home-hero">
+    <div class="home-hero-shade"></div>
+    <div class="container home-hero-content">
+        <div class="home-hero-copy">
+            <span class="hero-script">Gà rán GaRan</span>
+            <h1>Gà rán giòn rụm,<br /><em>vui hết nấc!</em></h1>
+            <p>Những miếng gà vàng giòn, thơm ngon, chuẩn vị cùng nhiều món ăn hấp dẫn đang chờ bạn.</p>
+            <div class="hero-actions">
+                <a class="btn hero-order-btn" asp-controller="Product" asp-action="Index">🛒 Đặt món ngay <span>→</span></a>
+                <a class="btn hero-menu-btn" href="#menu-noi-bat">Khám phá thực đơn</a>
+            </div>
+            <div class="hero-promises"><span>🛵 Giao nhanh 30 phút</span><i></i><span>🛡️ Ưu đãi mỗi ngày</span></div>
+        </div>
+        <div class="hero-food-sticker" aria-hidden="true"><span>Giòn tan</span><strong>thơm ngon!</strong><b>↙</b></div>
+    </div>
+</section>
+
+<section class="deal-ribbon container reveal-on-scroll" aria-label="Ưu đãi nổi bật">
+    <a asp-controller="Product" asp-action="Index" class="deal-item"><span class="deal-icon">%</span><span><strong>Ưu đãi món ngon</strong><small>Khám phá thực đơn hôm nay</small></span><b>›</b></a>
+    <a asp-controller="Product" asp-action="Index" asp-route-q="Combo" class="deal-item"><span class="deal-icon">🍔</span><span><strong>Combo tiết kiệm</strong><small>Đủ vị, đủ no, giá thật vui</small></span><b>›</b></a>
+    <a asp-controller="Product" asp-action="Index" class="deal-item"><span class="deal-icon">🛵</span><span><strong>Giao hàng tận nơi</strong><small>Phí giao tính theo địa chỉ</small></span><b>›</b></a>
+</section>
+
+<section class="home-section container reveal-on-scroll" id="menu-noi-bat">
+    <div class="section-heading-row">
+        <div><span class="section-kicker">Chọn món thật ngon</span><h2>Danh mục món ăn</h2></div>
+        <a class="section-more" asp-controller="Product" asp-action="Index">Xem thực đơn <span>→</span></a>
+    </div>
+    <div class="category-pills" role="list">
+        <a class="category-pill active" asp-controller="Product" asp-action="Index">✦ <span>Tất cả</span></a>
+        @foreach (var category in categories)
+        {
+            var icon = category.TenDanhMuc.Contains("Gà", StringComparison.OrdinalIgnoreCase) ? "🍗" : category.TenDanhMuc.Contains("Burger", StringComparison.OrdinalIgnoreCase) ? "🍔" : category.TenDanhMuc.Contains("Combo", StringComparison.OrdinalIgnoreCase) ? "🍟" : category.TenDanhMuc.Contains("Nước", StringComparison.OrdinalIgnoreCase) ? "🥤" : "🍴";
+            <a class="category-pill" asp-controller="Product" asp-action="Index" asp-route-categoryId="@category.DanhMucID"><span>@icon</span><span>@category.TenDanhMuc</span></a>
+        }
+    </div>
+</section>
+
+<section class="home-products-section reveal-on-scroll">
+    <div class="container">
+        <div class="section-heading-row">
+            <div><span class="section-kicker">Được yêu thích tại GaRan</span><h2>Món ngon nổi bật</h2></div>
+            <a class="section-more" asp-controller="Product" asp-action="Index">Xem tất cả <span>→</span></a>
+        </div>
+        @if (featured.Count == 0)
+        {
+            <div class="empty-menu">Chưa có món ăn đang bán. Hãy quay lại sau nhé.</div>
+        }
+        else
+        {
+            <div class="row g-3 g-lg-4 home-product-grid">
+                @foreach (var item in featured.Take(5))
+                {
+                    <partial name="_FoodCard" model="item" />
+                }
+            </div>
+        }
+    </div>
+</section>
+
+@if (combos.Count > 0)
+{
+    <section class="home-section container reveal-on-scroll">
+        <div class="section-heading-row">
+            <div><span class="section-kicker">Gọi một lần, vui cả nhóm</span><h2>Combo bán chạy</h2></div>
+            <a class="section-more" asp-controller="Product" asp-action="Index" asp-route-q="Combo">Xem combo <span>→</span></a>
+        </div>
+        <div class="row g-3 g-lg-4 home-product-grid">
+            @foreach (var item in combos.Take(5))
+            {
+                <partial name="_FoodCard" model="item" />
+            }
+        </div>
+    </section>
+}
+
+@if (reviews.Count > 0)
+{
+    <section class="customer-love-section reveal-on-scroll">
+        <div class="container customer-love-panel">
+            <div class="customer-love-heading"><span class="section-kicker">Lời thương gửi GaRan</span><h2>Khách hàng nói gì?</h2><div class="love-stars">★★★★★ <small>Đánh giá từ khách hàng</small></div></div>
+            <div class="review-carousel" data-review-carousel>
+                <div class="review-track">
+                    @foreach (var review in reviews.Take(6))
+                    {
+                        <article class="home-review">
+                            <div class="review-quote">“</div>
+                            <div class="review-stars">@string.Concat(Enumerable.Repeat("★", review.SoSao))<span>@string.Concat(Enumerable.Repeat("☆", 5 - review.SoSao))</span></div>
+                            <p>@review.NoiDung</p>
+                            <strong>@(review.KhachHang?.HoTen ?? "Khách hàng GaRan")</strong>
+                            <small>@(review.LoaiDanhGia == "DichVu" ? "Khách hàng thân thiết" : review.MonAn?.TenMon ?? "Món ngon GaRan")</small>
+                        </article>
+                    }
+                </div>
+                <div class="review-controls"><button type="button" data-review-prev aria-label="Đánh giá trước">‹</button><div class="review-dots" data-review-dots></div><button type="button" data-review-next aria-label="Đánh giá tiếp">›</button></div>
+            </div>
+        </div>
+    </section>
+}

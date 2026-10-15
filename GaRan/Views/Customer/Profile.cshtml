@@ -1,0 +1,42 @@
+@model KhachHang
+@{ ViewData["Title"] = "Hồ sơ"; }
+<div class="container section-pad">
+    <h1 class="fw-bold mb-4">Hồ sơ khách hàng</h1>
+    @if (TempData["Message"] != null) { <div class="alert alert-success">@TempData["Message"]</div> }
+    @if (TempData["Error"] != null) { <div class="alert alert-danger">@TempData["Error"]</div> }
+    <div class="row g-4 align-items-start">
+        <div class="col-lg-7">
+            <section class="loyalty-card mb-4">
+                <div class="loyalty-card-icon">★</div>
+                <div>
+                    <div class="small text-uppercase fw-bold">Điểm khách hàng thân thiết</div>
+                    <div class="loyalty-balance">@Model.DiemTichLuy điểm khả dụng</div>
+                    @if (ViewBag.IsVip is true)
+                    {
+                        <div class="badge text-bg-warning mb-1">Thành viên VIP · giảm @GaRan.Services.LoyaltyProgram.VipDiscountPercent% tiền món mỗi đơn</div>
+                    }
+                    else
+                    {
+                        <div class="small">@ViewBag.LifetimePoints/@GaRan.Services.LoyaltyProgram.VipLifetimePoints điểm</div>
+                    }
+                </div>
+            </section>
+            <form method="post" class="food-card p-4">
+                <div class="mb-3"><label class="form-label">Họ tên</label><input name="hoTen" value="@Model.HoTen" class="form-control" /></div>
+                <div class="mb-3"><label class="form-label">Email</label><input value="@Model.Email" class="form-control" disabled /></div>
+                <div class="mb-3"><label class="form-label">Số điện thoại</label><input name="soDienThoai" value="@Model.SoDienThoai" class="form-control" type="tel" inputmode="numeric" pattern="[0-9]*" required oninput="this.value = this.value.replace(/[^0-9]/g, '')" /></div>
+                <div class="mb-3"><label class="form-label">Địa chỉ</label><input name="diaChi" value="@Model.DiaChi" class="form-control" maxlength="150" /></div>
+                <button class="btn btn-primary">Cập nhật</button>
+                <a asp-action="History" class="btn btn-outline-primary">Lịch sử đơn hàng</a>
+            </form>
+        </div>
+        <div class="col-lg-5">
+            <form asp-action="ChangePassword" method="post" class="food-card p-4">
+                <h4 class="fw-bold">Đổi mật khẩu</h4>
+                <input name="oldPassword" type="password" class="form-control mb-3" placeholder="Mật khẩu cũ" />
+                <input name="newPassword" type="password" class="form-control mb-3" placeholder="Mật khẩu mới" />
+                <button class="btn btn-warning">Đổi mật khẩu</button>
+            </form>
+        </div>
+    </div>
+</div>

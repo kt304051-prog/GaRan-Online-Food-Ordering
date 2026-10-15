@@ -1,0 +1,23 @@
+@model DonHang
+@{
+    Layout = null;
+    ViewData["Title"] = $"Bill đơn hàng #{Model.DonHangID}";
+}
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Bill #@Model.DonHangID - GaRan</title>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+</head>
+<body>
+    <main>
+        @await Html.PartialAsync("~/Views/Order/_OrderInvoice.cshtml", new OrderVM { DonHang = Model, ChiTiet = Model.ChiTietDonHangs.ToList() })
+    </main>
+    <script>
+        window.addEventListener('load', () => window.setTimeout(() => window.print(), 350));
+    </script>
+</body>
+</html>

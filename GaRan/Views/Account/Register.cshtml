@@ -1,0 +1,60 @@
+@model RegisterVM
+@{
+    ViewData["Title"] = "Đăng ký";
+}
+
+<div class="container section-pad">
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <h1 class="fw-bold mb-4">Đăng ký khách hàng</h1>
+            <form asp-controller="Account" asp-action="Register" method="post" class="food-card p-4 row g-3">
+                <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+                <div class="col-md-6">
+                    <label asp-for="HoTen" class="form-label"></label>
+                    <input asp-for="HoTen" class="form-control" autocomplete="name" />
+                    <span asp-validation-for="HoTen" class="text-danger"></span>
+                </div>
+
+                <div class="col-md-6">
+                    <label asp-for="Email" class="form-label"></label>
+                    <input asp-for="Email" class="form-control" type="email" autocomplete="email" required />
+                    <span asp-validation-for="Email" class="text-danger"></span>
+                </div>
+
+                <div class="col-md-6">
+                    <label asp-for="SoDienThoai" class="form-label"></label>
+                    <input asp-for="SoDienThoai" class="form-control" type="tel" inputmode="numeric" pattern="[0-9]*" autocomplete="tel" required oninput="this.value = this.value.replace(/[^0-9]/g, '')" />
+                    <span asp-validation-for="SoDienThoai" class="text-danger"></span>
+                </div>
+
+                <div class="col-md-6">
+                    <label asp-for="DiaChi" class="form-label"></label>
+                    <input asp-for="DiaChi" class="form-control" autocomplete="street-address" />
+                    <span asp-validation-for="DiaChi" class="text-danger"></span>
+                </div>
+
+                <div class="col-md-6">
+                    <label asp-for="Password" class="form-label">Mật khẩu</label>
+                    <input asp-for="Password" class="form-control" autocomplete="new-password" />
+                    <span asp-validation-for="Password" class="text-danger"></span>
+                </div>
+
+                <div class="col-md-6">
+                    <label asp-for="ConfirmPassword" class="form-label">Nhập lại mật khẩu</label>
+                    <input asp-for="ConfirmPassword" class="form-control" autocomplete="new-password" />
+                    <span asp-validation-for="ConfirmPassword" class="text-danger"></span>
+                </div>
+
+                <div class="col-12">
+                    <button class="btn btn-primary">Đăng ký</button>
+                    <a asp-action="Login" class="btn btn-link">Đã có tài khoản?</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

@@ -1,0 +1,9 @@
+@inject IConfiguration Configuration
+@{
+    Layout = string.Equals(Configuration["Portal:Mode"], "Internal", StringComparison.OrdinalIgnoreCase)
+        ? "_InternalLayout"
+        : "_Layout";
+}
+<div class="container section-pad">
+    <div class="alert alert-danger">Bạn không có quyền truy cập chức năng này.</div>
+</div>

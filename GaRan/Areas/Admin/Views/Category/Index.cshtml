@@ -1,0 +1,16 @@
+@model List<DanhMuc>
+@{
+    ViewData["Title"] = "Quản lý danh mục";
+    var activeCount = Model.Count(x => x.TrangThai);
+    var foodCount = Model.Sum(x => x.MonAns.Count);
+}
+
+<section class="admin-page-heading"><div class="admin-page-title-icon">▦</div><div><h2>Quản lý danh mục</h2><p>Sắp xếp thực đơn theo từng nhóm món</p></div><a asp-action="Create" class="btn admin-primary-action">＋ Thêm danh mục</a></section>
+<div class="admin-summary-strip"><article><span class="admin-summary-icon">▦</span><div><small>Tổng danh mục</small><strong>@Model.Count</strong></div></article><article><span class="admin-summary-icon is-green">●</span><div><small>Đang hoạt động</small><strong>@activeCount</strong></div></article><article><span class="admin-summary-icon is-gold">🍗</span><div><small>Món thuộc danh mục</small><strong>@foodCount</strong></div></article></div>
+<div class="admin-filter-card admin-filter-grid"><div class="admin-search-field"><span>⌕</span><input id="categorySearch" class="form-control admin-local-search" type="search" placeholder="Nhập tên danh mục..." /></div><select id="categoryStatus" class="form-select" data-admin-filter="status"><option value="">Tất cả trạng thái</option><option value="active">Đang hoạt động</option><option value="inactive">Đang ẩn</option></select><button class="btn admin-outline-action" type="button" onclick="document.getElementById('categorySearch').value='';document.getElementById('categoryStatus').value='';document.querySelectorAll('[data-admin-search-row]').forEach(x=>x.hidden=false)">Làm mới</button></div>
+<section class="admin-data-card"><div class="admin-data-card-heading"><div><strong>Danh mục món ăn</strong><span>Quản lý trạng thái hiển thị và số lượng món</span></div><span class="admin-record-count">@Model.Count danh mục</span></div>
+    @if (!Model.Any()){<div class="admin-empty">Chưa có danh mục nào.</div>}
+    else {<div class="table-responsive"><table class="table admin-data-table align-middle"><thead><tr><th>Danh mục</th><th>Mô tả</th><th>Số món</th><th>Trạng thái</th><th class="text-end">Thao tác</th></tr></thead><tbody>
+    @foreach (var item in Model){<tr data-admin-search-row data-status="@(item.TrangThai ? "active" : "inactive")"><td><div class="admin-category-title"><span>🍽</span><strong>@item.TenDanhMuc</strong></div></td><td class="admin-description-cell">@(item.MoTa ?? "Chưa có mô tả")</td><td><span class="admin-soft-tag">@item.MonAns.Count món</span></td><td><span class="admin-status-tag @(item.TrangThai ? "is-active" : "is-inactive")">@(item.TrangThai ? "Đang hoạt động" : "Đang ẩn")</span></td><td class="text-end"><div class="admin-row-actions"><a asp-action="Edit" asp-route-id="@item.DanhMucID" class="admin-icon-action" aria-label="Sửa @item.TenDanhMuc" title="Sửa">✎</a><form asp-action="Delete" method="post" onsubmit="return confirm('Xóa danh mục này? Nếu có món ăn, danh mục sẽ được ẩn.');"><input type="hidden" name="id" value="@item.DanhMucID" /><button class="admin-icon-action is-danger" aria-label="Xóa @item.TenDanhMuc" title="Xóa">♲</button></form></div></td></tr>}
+    </tbody></table></div><div class="admin-table-footer"><span>@Model.Count danh mục</span></div>}
+</section>

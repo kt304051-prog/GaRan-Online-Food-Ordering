@@ -1,0 +1,126 @@
+@model DonHang
+@{
+    ViewData["Title"] = $"Đơn hàng #{Model.DonHangID}";
+    var subtotal = Model.ChiTietDonHangs.Sum(x => x.ThanhTien);
+    var voucherDiscount = Math.Max(0, subtotal - Model.TienHang - Model.TienGiamDiem - Model.TienGiamThanhVien);
+}
+
+<div class="admin-toolbar">
+    <div>
+        <h2>Đơn hàng #@Model.DonHangID</h2>
+    </div>
+    <div class="d-flex gap-2">
+        @if (User.IsInRole("Admin") || User.IsInRole("NhanVien"))
+        {
+            <a asp-action="Print" asp-route-id="@Model.DonHangID" target="_blank" rel="noopener" class="btn btn-primary">In bill</a>
+            <a asp-action="Print" asp-route-id="@Model.DonHangID" target="_blank" rel="noopener" class="btn btn-outline-primary">Lưu PDF</a>
+        }
+        <a asp-action="Index" class="btn btn-outline-primary">Quay lại</a>
+    </div>
+</div>
+
+<div class="row g-3 mb-3">
+    <div class="col-lg-8">
+        <div class="admin-card">
+            <div class="admin-card-header">
+                <h3>Món đã đặt</h3>
+                <span class="badge badge-status">@Model.TrangThaiDonHang</span>
+            </div>
+            <div class="table-responsive">
+                <table class="table table-bordered align-middle mb-0">
+                    <thead>
+                        <tr>
+                            <th>Món</th>
+                            <th>Số lượng</th>
+                            <th>Đơn giá</th>
+                            <th>Thành tiền</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    @foreach (var detail in Model.ChiTietDonHangs)
+                    {
+                        <tr>
+                            <td class="fw-bold">@detail.MonAn?.TenMon</td>
+                            <td>@detail.SoLuong</td>
+                            <td>@detail.DonGia.ToString("N0") đ</td>
+                            <td class="price">@detail.ThanhTien.ToString("N0") đ</td>
+                        </tr>
+                    }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-4">
+        <div class="admin-card p-4">
+            <h4>@ViewBag.StoreName</h4>
+            <p>@ViewBag.StoreAddress<br />@ViewBag.StorePhone @ViewBag.StoreEmail</p>
+            <h3 class="admin-side-title">Thông tin giao hàng</h3>
+            <div class="info-row"><span>Khách</span><strong>@(Model.TenKhachDat ?? Model.KhachHang?.HoTen)</strong></div>
+            <div class="info-row"><span>Điện thoại</span><strong>@Model.SoDienThoaiNhan</strong></div>
+            <div class="info-row"><span>Email</span><strong>@(Model.EmailKhachDat ?? Model.KhachHang?.Email ?? "-")</strong></div>
+            <div class="info-row"><span>Ngày đặt</span><strong>@Model.NgayDat.ToString("dd/MM/yyyy HH:mm")</strong></div>
+            <div class="info-row"><span>Ngày giao</span><strong>@(ViewBag.DeliveredAt is DateTime deliveredAt ? deliveredAt.ToString("dd/MM/yyyy HH:mm") : "Chưa giao")</strong></div>
+            <div class="info-address">@Model.DiaChiGiaoHang</div>
+            @if (!string.IsNullOrWhiteSpace(Model.GhiChu)) { <div class="info-address mt-2"><strong>Ghi chú đơn hàng:</strong> @Model.GhiChu</div> }
+            <div class="info-row mt-2"><span>Khoảng cách</span><strong>@Model.KhoangCachKm.ToString("0.00") km</strong></div>
+            <div class="admin-total mt-3">
+                <span>Tạm tính</span>
+                <strong>@subtotal.ToString("N0") đ</strong>
+            </div>
+            @if (voucherDiscount > 0)
+            {
+                <div class="info-row text-success"><span>Giảm giá / Voucher</span><strong>-@voucherDiscount.ToString("N0") đ</strong></div>
+            }
+            @if (Model.TienGiamThanhVien > 0)
+            {
+                <div class="info-row text-success"><span>Ưu đãi thành viên VIP</span><strong>-@Model.TienGiamThanhVien.ToString("N0") đ</strong></div>
+            }
+            @if (Model.TienGiamDiem > 0)
+            {
+                <div class="info-row text-success"><span>Đổi điểm (@Model.DiemDaDung điểm)</span><strong>-@Model.TienGiamDiem.ToString("N0") đ</strong></div>
+            }
+            <div class="admin-total">
+                <span>Tiền hàng sau giảm</span>
+                <strong>@Model.TienHang.ToString("N0") đ</strong>
+            </div>
+            <div class="info-row"><span>Thuế</span><strong>@Model.TienThue.ToString("N0") đ</strong></div>
+            <div class="info-row"><span>Phí giao hàng</span><strong>@Model.PhiGiaoHang.ToString("N0") đ</strong></div>
+            <div class="admin-total mt-3">
+                <span>Tổng thanh toán</span>
+                <strong>@Model.TongTien.ToString("N0") đ</strong>
+            </div>
+            @{ var payment = Model.ThanhToans.FirstOrDefault(); }
+            <div class="info-row mt-3"><span>Phương thức</span><strong>@(payment?.PhuongThucThanhToan ?? "-")</strong></div>
+            <div class="info-row"><span>Thanh toán</span><strong>@(payment?.TrangThaiThanhToan ?? "Chưa thanh toán")</strong></div>
+            @if (payment != null && payment.PhuongThucThanhToan is "QR" or "Bank")
+            {
+                var bankTransactions = ViewBag.BankTransactions as List<GiaoDichWebhookThanhToan> ?? new();
+                if (bankTransactions.Count > 0)
+                {
+                    <div class="border-top mt-3 pt-3">
+                        <strong>Giao dịch ngân hàng đã đối soát</strong>
+                        @foreach (var bankTransaction in bankTransactions)
+                        {
+                            <div class="small mt-2">
+                                @bankTransaction.NhanLuc.ToLocalTime().ToString("dd/MM/yyyy HH:mm") · @bankTransaction.SoTien.ToString("N0") đ
+                                @if (!string.IsNullOrWhiteSpace(bankTransaction.MaThamChieuNganHang)) { <span> · Mã @bankTransaction.MaThamChieuNganHang</span> }
+                            </div>
+                        }
+                    </div>
+                }
+            }
+            @if (Model.DiemDaCong > 0)
+            {
+                <div class="info-row text-success"><span>Điểm đã cộng</span><strong>+@Model.DiemDaCong điểm</strong></div>
+            }
+            @if (payment != null && payment.TrangThaiThanhToan != "Đã thanh toán" && (payment.PhuongThucThanhToan != "COD" || Model.TrangThaiDonHang == "Hoàn thành"))
+            {
+                <form asp-area="" asp-controller="Payment" asp-action="Confirm" method="post" class="mt-3">
+                    <input type="hidden" name="orderId" value="@Model.DonHangID" />
+                    <button class="btn btn-success w-100">@(payment.PhuongThucThanhToan == "COD" ? "Xác nhận đã thu COD" : "Xác nhận đã nhận chuyển khoản")</button>
+                </form>
+            }
+        </div>
+    </div>
+</div>

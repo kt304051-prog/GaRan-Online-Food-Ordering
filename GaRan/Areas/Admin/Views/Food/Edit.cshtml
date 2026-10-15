@@ -1,0 +1,78 @@
+@model MonAn
+@{
+    ViewData["Title"] = Model.MonAnID == 0 ? "Thêm món ăn" : "Sửa món ăn";
+}
+
+<div class="admin-toolbar">
+    <div>
+        <h2>@ViewData["Title"]</h2>
+    </div>
+    <a asp-action="Index" class="btn btn-outline-primary">Quay lại</a>
+</div>
+
+<form asp-action="Save" method="post" enctype="multipart/form-data" class="admin-card p-4">
+    <input asp-for="MonAnID" type="hidden" />
+    <input asp-for="HinhAnh" type="hidden" />
+    <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+    <div class="row g-3">
+        <div class="col-lg-8">
+            <div class="row g-3">
+                <div class="col-md-7">
+                    <label asp-for="TenMon" class="form-label">Tên món</label>
+                    <input asp-for="TenMon" class="form-control" />
+                    <span asp-validation-for="TenMon" class="text-danger"></span>
+                </div>
+                <div class="col-md-5">
+                    <label asp-for="DanhMucID" class="form-label">Danh mục</label>
+                    <select asp-for="DanhMucID" asp-items="ViewBag.DanhMucID" class="form-select"></select>
+                    <span asp-validation-for="DanhMucID" class="text-danger"></span>
+                </div>
+                <div class="col-md-5">
+                    <label asp-for="Gia" class="form-label">Giá bán</label>
+                    <input asp-for="Gia" class="form-control" min="0" />
+                    <span asp-validation-for="Gia" class="text-danger"></span>
+                </div>
+                <div class="col-md-7 d-flex align-items-end">
+                    <div class="d-flex flex-wrap gap-4">
+                        <div class="form-check admin-check">
+                            <input asp-for="TrangThai" class="form-check-input" />
+                            <label asp-for="TrangThai" class="form-check-label">&#272;ang b&#225;n</label>
+                        </div>
+                        <div class="form-check admin-check">
+                            <input asp-for="NoiBat" class="form-check-input" />
+                            <label asp-for="NoiBat" class="form-check-label">N&#7893;i b&#7853;t</label>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-12">
+                    <label asp-for="MoTa" class="form-label">Mô tả</label>
+                    <textarea asp-for="MoTa" rows="5" class="form-control"></textarea>
+                    <span asp-validation-for="MoTa" class="text-danger"></span>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-4">
+            <label class="form-label">Hình ảnh món ăn</label>
+            <div class="image-preview mb-3">
+                @if (!string.IsNullOrWhiteSpace(Model.HinhAnh))
+                {
+                    <img src="@Model.HinhAnh" alt="@Model.TenMon" />
+                }
+                else
+                {
+                    <span>Chưa có ảnh</span>
+                }
+            </div>
+            <input name="imageFile" type="file" accept="image/*" class="form-control" />
+        </div>
+        <div class="col-12 d-flex gap-2">
+            <button class="btn btn-primary">Lưu món ăn</button>
+            <a asp-action="Index" class="btn btn-outline-secondary">Hủy</a>
+        </div>
+    </div>
+</form>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

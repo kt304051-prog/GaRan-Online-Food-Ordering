@@ -1,0 +1,47 @@
+@model MonAn
+@{
+    ViewData["Title"] = Model.TenMon;
+    var reviews = ViewBag.Reviews as List<DanhGia> ?? new();
+}
+<div class="container section-pad">
+    @if (TempData["Message"] != null) { <div class="alert alert-success">@TempData["Message"]</div> }
+    <div class="row g-4 align-items-start">
+        <div class="col-lg-6">
+            <img class="food-img rounded" src="@(string.IsNullOrWhiteSpace(Model.HinhAnh) ? "https://images.unsplash.com/photo-1562967916-eb82221dfb36?auto=format&fit=crop&w=1000&q=80" : Model.HinhAnh)" alt="@Model.TenMon" />
+        </div>
+        <div class="col-lg-6">
+            <div class="small text-muted">@Model.DanhMuc?.TenDanhMuc</div>
+            <h1 class="fw-bold">@Model.TenMon</h1>
+            <p>@Model.MoTa</p>
+            <div class="display-6 price mb-3">@Model.Gia.ToString("N0") đ</div>
+            <form asp-controller="Cart" asp-action="Add" method="post" class="d-flex gap-2">
+                <input type="hidden" name="id" value="@Model.MonAnID" />
+                <input type="number" name="quantity" min="1" value="1" class="form-control" style="max-width:120px" />
+                <button class="btn btn-primary">Thêm vào giỏ</button>
+            </form>
+        </div>
+    </div>
+    <hr class="my-5" />
+    <h3 class="fw-bold">Đánh giá</h3>
+    @if (User.IsInRole("KhachHang"))
+    {
+        <form asp-controller="Review" asp-action="Create" method="post" class="row g-2 mb-4">
+            <input type="hidden" name="monAnId" value="@Model.MonAnID" />
+            <div class="col-md-2"><input class="form-control" type="number" name="soSao" min="1" max="5" value="5" /></div>
+            <div class="col-md-8"><input class="form-control" name="noiDung" /></div>
+            <div class="col-md-2"><button class="btn btn-warning w-100">Gửi</button></div>
+        </form>
+    }
+    <div class="row g-3">
+        @foreach (var r in reviews)
+        {
+            <div class="col-md-4">
+                <div class="food-card p-3">
+                    <div class="price">@string.Concat(Enumerable.Repeat("★", r.SoSao))</div>
+                    <p>@r.NoiDung</p>
+                    <strong>@r.KhachHang?.HoTen</strong>
+                </div>
+            </div>
+        }
+    </div>
+</div>

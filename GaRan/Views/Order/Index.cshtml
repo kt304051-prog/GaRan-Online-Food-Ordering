@@ -1,0 +1,46 @@
+@model List<DonHang>
+@{
+    ViewData["Title"] = "Đơn hàng";
+}
+
+<div class="container section-pad">
+    <h1 class="fw-bold mb-4">Đơn hàng</h1>
+
+    @if (TempData["Message"] != null)
+    {
+        <div class="alert alert-success">@TempData["Message"]</div>
+    }
+
+    @if (!Model.Any())
+    {
+        <div class="alert alert-warning">Bạn chưa có đơn hàng nào.</div>
+    }
+    else
+    {
+        <table class="table table-bordered bg-white">
+            <thead>
+                <tr>
+                    <th>Mã</th>
+                    <th>Khách hàng</th>
+                    <th>Ngày đặt</th>
+                    <th>Tổng tiền</th>
+                    <th>Trạng thái</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+            @foreach (var item in Model)
+            {
+                <tr>
+                    <td>#@item.DonHangID</td>
+                    <td>@item.KhachHang?.HoTen</td>
+                    <td>@item.NgayDat.ToString("dd/MM/yyyy HH:mm")</td>
+                    <td>@item.TongTien.ToString("N0") đ</td>
+                    <td><span class="badge badge-status">@item.TrangThaiDonHang</span></td>
+                    <td><a class="btn btn-sm btn-outline-primary" asp-controller="Order" asp-action="Details" asp-route-id="@item.DonHangID">Chi tiết</a></td>
+                </tr>
+            }
+            </tbody>
+        </table>
+    }
+</div>

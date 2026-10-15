@@ -1,0 +1,298 @@
+@model CauHinhGiaoHang
+@{
+    ViewData["Title"] = "Cấu hình giao hàng";
+    var midDistance = Model.MienPhiDenKm + (Model.ToiDaKm - Model.MienPhiDenKm) / 2m;
+}
+
+<div class="delivery-settings-page">
+    <div class="delivery-settings-heading">
+        <div>
+            <div class="delivery-eyebrow">VẬN HÀNH CỬA HÀNG</div>
+            <h2>Cấu hình giao hàng</h2>
+            <p class="delivery-heading-description">Thiết lập phạm vi, phí vận chuyển, thanh toán và thông tin cửa hàng</p>
+        </div>
+        <div class="delivery-heading-actions">
+            <span class="delivery-mode"><i></i> Ước tính theo khu vực</span>
+            <a asp-action="Index" class="btn btn-outline-secondary">Quản lý đơn giao</a>
+            <button type="submit" form="deliverySettingsForm" class="btn btn-danger delivery-top-save">Lưu cấu hình</button>
+        </div>
+    </div>
+
+    @if (TempData["Message"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            @TempData["Message"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Đóng"></button>
+        </div>
+    }
+
+    <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
+
+    <div class="delivery-overview">
+        <div class="delivery-overview-card"><span class="delivery-overview-icon" aria-hidden="true">↗</span><span class="delivery-overview-label">Phạm vi tối đa</span><strong><b id="overviewRange">@Model.ToiDaKm.ToString("0.##")</b> km</strong></div>
+        <div class="delivery-overview-card"><span class="delivery-overview-icon is-green" aria-hidden="true">✓</span><span class="delivery-overview-label">Miễn phí giao hàng</span><strong>Dưới <b id="overviewFree">@Model.MienPhiDenKm.ToString("0.##")</b> km</strong></div>
+        <div class="delivery-overview-card"><span class="delivery-overview-icon is-purple" aria-hidden="true">⌖</span><span class="delivery-overview-label">Ước tính khoảng cách · cùng / khác phường</span><strong><b id="overviewSameWard">@Model.UocTinhCungPhuongKm.ToString("0.##")</b> / <b id="overviewOtherWard">@Model.UocTinhKhacPhuongKm.ToString("0.##")</b> km</strong></div>
+        <div class="delivery-overview-card"><span class="delivery-overview-icon is-gold" aria-hidden="true">₫</span><span class="delivery-overview-label">Phương thức đang bật</span><strong id="overviewPayments">@(Model.BatCOD && Model.BatVietQR ? "COD · VietQR" : Model.BatCOD ? "COD" : Model.BatVietQR ? "VietQR" : "Chưa bật")</strong></div>
+    </div>
+
+    <form asp-action="SaveSettings" method="post" id="deliverySettingsForm" class="delivery-settings-form">
+        <input asp-for="CauHinhGiaoHangID" type="hidden" />
+
+        <section class="delivery-section" id="delivery-pricing">
+            <div class="delivery-section-heading">
+                <span class="delivery-step">01</span>
+                <div><h3>Phạm vi và phí giao hàng</h3></div>
+            </div>
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <label asp-for="MienPhiDenKm" class="form-label">Miễn phí giao hàng dưới (km)</label>
+                    <div class="input-group"><input asp-for="MienPhiDenKm" class="form-control delivery-number" type="number" step="0.1" min="0" max="99.9" /><span class="input-group-text">km</span></div>
+                    <span asp-validation-for="MienPhiDenKm" class="text-danger"></span>
+                </div>
+                <div class="col-md-6">
+                    <label asp-for="ToiDaKm" class="form-label">Phạm vi giao hàng tối đa</label>
+                    <div class="input-group"><input asp-for="ToiDaKm" class="form-control delivery-number" type="number" step="0.1" min="0.1" max="100" /><span class="input-group-text">km</span></div>
+                    <span asp-validation-for="ToiDaKm" class="text-danger"></span>
+                </div>
+                <div class="col-md-6">
+                    <label asp-for="UocTinhCungPhuongKm" class="form-label">Khoảng cách ước tính: cùng phường/xã</label>
+                    <div class="input-group"><input asp-for="UocTinhCungPhuongKm" class="form-control delivery-number" type="number" step="0.1" min="0.1" max="100" /><span class="input-group-text">km</span></div>
+                    <span asp-validation-for="UocTinhCungPhuongKm" class="text-danger"></span>
+                </div>
+                <div class="col-md-6">
+                    <label asp-for="UocTinhKhacPhuongKm" class="form-label">Khoảng cách ước tính: khác phường/xã</label>
+                    <div class="input-group"><input asp-for="UocTinhKhacPhuongKm" class="form-control delivery-number" type="number" step="0.1" min="0.1" max="100" /><span class="input-group-text">km</span></div>
+                    <span asp-validation-for="UocTinhKhacPhuongKm" class="text-danger"></span>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label" id="nearFeeLabel">Phí khu vực gần (dưới @midDistance.ToString("0.##") km)</label>
+                    <div class="input-group"><input asp-for="Phi3Den4Km" class="form-control delivery-number" type="number" step="1000" min="0" /><span class="input-group-text">₫</span></div>
+                    <span asp-validation-for="Phi3Den4Km" class="text-danger"></span>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label" id="farFeeLabel">Phí khu vực xa (từ @midDistance.ToString("0.##") km đến phạm vi tối đa)</label>
+                    <div class="input-group"><input asp-for="Phi4Den5Km" class="form-control delivery-number" type="number" step="1000" min="0" /><span class="input-group-text">₫</span></div>
+                    <span asp-validation-for="Phi4Den5Km" class="text-danger"></span>
+                </div>
+                <div class="col-md-6">
+                    <label asp-for="TyLeThue" class="form-label">Thuế suất</label>
+                    <div class="input-group"><input asp-for="TyLeThue" class="form-control delivery-number" type="number" step="0.01" min="0" max="1" /><span class="input-group-text">tỷ lệ</span></div>
+                    <span asp-validation-for="TyLeThue" class="text-danger"></span>
+                </div>
+            </div>
+            <div class="delivery-rule-preview" aria-live="polite">
+                <div><span class="preview-dot free"></span><span>Miễn phí dưới <strong id="previewFree">@Model.MienPhiDenKm.ToString("0.##") km</strong></span></div>
+                <div><span class="preview-dot near"></span><span>Khu vực gần <strong id="previewNear">@Model.Phi3Den4Km.ToString("N0") ₫</strong></span></div>
+                <div><span class="preview-dot far"></span><span>Khu vực xa <strong id="previewFar">@Model.Phi4Den5Km.ToString("N0") ₫</strong></span></div>
+                <div><span class="preview-dot limit"></span><span>Không nhận vượt <strong id="previewMax">@Model.ToiDaKm.ToString("0.##") km</strong></span></div>
+            </div>
+            <div class="delivery-fee-checker">
+                <div><span class="delivery-fee-checker-icon">🧮</span><div><strong>Thử tính phí giao hàng</strong></div></div>
+                <label for="deliveryTestDistance">Khoảng cách mẫu (km)<input id="deliveryTestDistance" type="number" min="0" step="0.1" value="2" class="form-control" /></label>
+                <output id="deliveryTestResult" aria-live="polite">Miễn phí · 0 ₫</output>
+            </div>
+        </section>
+
+        <section class="delivery-section" id="delivery-store">
+            <div class="delivery-section-heading">
+                <span class="delivery-step">02</span>
+                <div><h3>Thông tin cửa hàng</h3></div>
+            </div>
+            <div class="row g-3">
+                <div class="col-lg-4"><label asp-for="TenCuaHang" class="form-label">Tên cửa hàng</label><input asp-for="TenCuaHang" class="form-control" maxlength="150" /><span asp-validation-for="TenCuaHang" class="text-danger"></span></div>
+                <div class="col-lg-4"><label asp-for="DienThoaiCuaHang" class="form-label">Điện thoại</label><input asp-for="DienThoaiCuaHang" class="form-control" maxlength="20" inputmode="tel" /><span asp-validation-for="DienThoaiCuaHang" class="text-danger"></span></div>
+                <div class="col-lg-4"><label asp-for="EmailCuaHang" class="form-label">Email cửa hàng</label><input asp-for="EmailCuaHang" class="form-control" type="email" maxlength="150" /><span asp-validation-for="EmailCuaHang" class="text-danger"></span></div>
+                <div class="col-12"><label asp-for="DiaChiCuaHang" class="form-label">Địa chỉ cửa hàng</label><input asp-for="DiaChiCuaHang" class="form-control" maxlength="250" placeholder="Số nhà, đường, phường/xã, TP. Hồ Chí Minh" /><span asp-validation-for="DiaChiCuaHang" class="text-danger"></span></div>
+            </div>
+        </section>
+
+        <section class="delivery-section" id="delivery-payment">
+            <div class="delivery-section-heading">
+                <span class="delivery-step">03</span>
+                <div><h3>Thanh toán và tài khoản nhận tiền</h3></div>
+            </div>
+            <div class="delivery-payment-switches">
+                <label class="delivery-toggle"><input asp-for="BatCOD" class="form-check-input" /><span><strong>Thanh toán khi nhận hàng</strong></span></label>
+                <label class="delivery-toggle"><input asp-for="BatVietQR" class="form-check-input" /><span><strong>VietQR / chuyển khoản</strong></span></label>
+            </div>
+            <div class="row g-3 mt-1">
+                <div class="col-lg-3 col-md-6">
+                    <label class="form-label" for="bankPicker">Ngân hàng</label>
+                    <select id="bankPicker" class="form-select">
+                        <option value="970422" data-name="MBBank">MBBank</option>
+                        <option value="970436" data-name="Vietcombank">Vietcombank</option>
+                        <option value="970418" data-name="BIDV">BIDV</option>
+                        <option value="970415" data-name="VietinBank">VietinBank</option>
+                        <option value="970405" data-name="Agribank">Agribank</option>
+                        <option value="970407" data-name="Techcombank">Techcombank</option>
+                        <option value="970416" data-name="ACB">ACB</option>
+                        <option value="970432" data-name="VPBank">VPBank</option>
+                        <option value="970423" data-name="TPBank">TPBank</option>
+                        <option value="970403" data-name="Sacombank">Sacombank</option>
+                        <option value="970437" data-name="HDBank">HDBank</option>
+                        <option value="970441" data-name="VIB">VIB</option>
+                        <option value="970443" data-name="SHB">SHB</option>
+                        <option value="970426" data-name="MSB">MSB</option>
+                        <option value="970448" data-name="OCB">OCB</option>
+                        <option value="970419" data-name="NCB">NCB</option>
+                    </select>
+                    <input asp-for="NganHangBin" type="hidden" /><span asp-validation-for="NganHangBin" class="text-danger"></span>
+                </div>
+                <div class="col-lg-3 col-md-6"><label asp-for="TenNganHang" class="form-label">Tên ngân hàng</label><input asp-for="TenNganHang" class="form-control" readonly /><span asp-validation-for="TenNganHang" class="text-danger"></span></div>
+                <div class="col-lg-3 col-md-6"><label asp-for="SoTaiKhoan" class="form-label">Số tài khoản</label><input asp-for="SoTaiKhoan" class="form-control" maxlength="30" inputmode="numeric" /><span asp-validation-for="SoTaiKhoan" class="text-danger"></span></div>
+                <div class="col-lg-3 col-md-6"><label asp-for="ChuTaiKhoan" class="form-label">Tên chủ tài khoản</label><input asp-for="ChuTaiKhoan" class="form-control" maxlength="100" /><span asp-validation-for="ChuTaiKhoan" class="text-danger"></span></div>
+                <div class="col-md-6"><label asp-for="TienToNoiDung" class="form-label">Tiền tố chuyển khoản</label><input asp-for="TienToNoiDung" class="form-control" maxlength="20" placeholder="GARAN" /><span asp-validation-for="TienToNoiDung" class="text-danger"></span></div>
+            </div>
+        </section>
+
+        <div class="delivery-savebar">
+            <span id="settingsSaveState" aria-live="polite">Cấu hình đã tải</span>
+            <div><a asp-action="Index" class="btn btn-light">Hủy</a><button type="submit" class="btn btn-danger px-4">Lưu cấu hình</button></div>
+        </div>
+    </form>
+</div>
+
+<style>
+    .delivery-settings-page{max-width:1180px;margin:0 auto;color:#321b1b}
+    .delivery-settings-heading{display:flex;justify-content:space-between;align-items:flex-end;gap:24px;margin-bottom:22px}
+    .delivery-eyebrow{font-size:.72rem;letter-spacing:.12em;font-weight:800;color:#b20e19;margin-bottom:6px}
+    .delivery-settings-heading h2{font-size:clamp(1.65rem,2.5vw,2.15rem);font-weight:850;margin:0 0 6px}
+    .delivery-settings-heading p,.delivery-section-heading p{color:#7b7474;margin:0}
+    .delivery-heading-actions{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+    .delivery-mode{display:inline-flex;align-items:center;gap:8px;background:#fff5e8;border:1px solid #f2dfbd;border-radius:999px;padding:9px 13px;font-size:.83rem;font-weight:700;color:#765119;white-space:nowrap}
+    .delivery-mode i{width:8px;height:8px;border-radius:50%;background:#db9c22}
+    .delivery-overview{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;margin-bottom:18px}
+    .delivery-overview-card{background:#fff;border:1px solid #eadede;border-radius:12px;padding:17px 19px;box-shadow:0 7px 20px rgba(52,20,20,.04)}
+    .delivery-overview-card span,.delivery-overview-card small{display:block;color:#797272}
+    .delivery-overview-card strong{display:block;font-size:1.28rem;margin:4px 0;color:#321b1b}
+    .delivery-overview-card small{font-size:.78rem}
+    .delivery-overview-card{position:relative;min-height:92px;padding:17px 18px 15px 64px!important;overflow:hidden}
+    .delivery-overview-card::before{content:none!important}
+    .delivery-overview-card .delivery-overview-icon{position:absolute;top:15px;left:14px;display:grid;width:34px;height:34px;place-items:center;border-radius:11px;color:#c9192d;background:#fff0ef;font-size:.95rem;font-weight:900}
+    .delivery-overview-card .delivery-overview-icon.is-green{color:#138254;background:#e7f7ef}
+    .delivery-overview-card .delivery-overview-icon.is-purple{color:#7051ca;background:#f0edff}
+    .delivery-overview-card .delivery-overview-icon.is-gold{color:#b77909;background:#fff4dc}
+    .delivery-overview-card .delivery-overview-label{display:block;min-height:1.7em;color:#7d8ba0;font-size:.68rem;line-height:1.35}
+    .delivery-overview-card strong{margin:5px 0 0;color:#203149;font-size:1.05rem;font-weight:900;line-height:1.35}
+    .delivery-settings-form{background:#fff;border:1px solid #eadede;border-radius:14px;box-shadow:0 10px 28px rgba(52,20,20,.06);overflow:hidden}
+    .delivery-section{padding:24px 26px;border-bottom:1px solid #f0e8e8}
+    .delivery-section-heading{display:flex;align-items:flex-start;gap:13px;margin-bottom:20px}
+    .delivery-step{display:grid;place-items:center;width:34px;height:34px;border-radius:10px;background:#fff0ee;color:#c61621;font-weight:850;flex:0 0 34px}
+    .delivery-section-heading h3{font-size:1.08rem;font-weight:800;margin:2px 0 4px}
+    .delivery-section-heading p{font-size:.86rem;max-width:820px}
+    .delivery-settings-form .form-label{font-weight:700;font-size:.88rem;margin-bottom:7px}
+    .delivery-settings-form .form-control,.delivery-settings-form .form-select,.delivery-settings-form .input-group-text{min-height:44px;border-color:#d9dfe8}
+    .delivery-settings-form .form-control:focus,.delivery-settings-form .form-select:focus{border-color:#df2933;box-shadow:0 0 0 .2rem rgba(220,25,35,.1)}
+    .delivery-settings-form .form-text{color:#7d7777;font-size:.78rem}
+    .delivery-rule-preview{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-top:22px;padding:15px;background:#fff9f6;border:1px solid #f3e8e2;border-radius:10px}
+    .delivery-rule-preview>div{display:flex;align-items:center;gap:9px;font-size:.82rem}
+    .preview-dot{width:10px;height:10px;border-radius:50%;flex:0 0 10px}.preview-dot.free{background:#20a46b}.preview-dot.near{background:#e8a52b}.preview-dot.far{background:#df2933}.preview-dot.limit{background:#4b6c9b}
+    .delivery-payment-switches{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+    .delivery-toggle{display:flex;align-items:center;gap:12px;border:1px solid #e7dfdf;border-radius:10px;padding:15px;cursor:pointer}
+    .delivery-toggle .form-check-input{margin:0;float:none;width:2.3em;height:1.25em;flex:0 0 auto}
+    .delivery-toggle strong,.delivery-toggle small{display:block}.delivery-toggle strong{font-size:.9rem}.delivery-toggle small{color:#7d7777;font-size:.78rem;margin-top:2px}
+    .delivery-savebar{display:flex;justify-content:space-between;align-items:center;gap:15px;padding:15px 26px;background:#fffafa;position:sticky;bottom:0;border-top:1px solid #eee4e4;z-index:2}
+    .delivery-savebar>span{font-size:.82rem;color:#777}
+    .delivery-savebar>div{display:flex;gap:9px}
+    @@media(max-width:1000px){.delivery-overview{grid-template-columns:repeat(2,minmax(0,1fr))}}
+    @@media(max-width:800px){.delivery-settings-heading{align-items:flex-start;flex-direction:column}.delivery-overview{grid-template-columns:1fr}.delivery-rule-preview{grid-template-columns:repeat(2,minmax(0,1fr))}.delivery-section{padding:20px 16px}.delivery-savebar{padding:13px 16px}}
+    @@media(max-width:480px){.delivery-payment-switches{grid-template-columns:1fr}.delivery-rule-preview{grid-template-columns:1fr}.delivery-savebar{align-items:flex-start;flex-direction:column}.delivery-savebar>div{width:100%}.delivery-savebar button,.delivery-savebar a{flex:1}}
+</style>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        (() => {
+            const byId = id => document.getElementById(id);
+            const free = byId('MienPhiDenKm');
+            const max = byId('ToiDaKm');
+            const nearFee = byId('Phi3Den4Km');
+            const farFee = byId('Phi4Den5Km');
+            const sameWardEstimate = byId('UocTinhCungPhuongKm');
+            const otherWardEstimate = byId('UocTinhKhacPhuongKm');
+            const cod = byId('BatCOD');
+            const qr = byId('BatVietQR');
+            const money = value => new Intl.NumberFormat('vi-VN').format(Number(value || 0)) + ' ₫';
+            const updatePreview = () => {
+                const freeValue = Math.max(0, Number(free.value || 0));
+                const maxValue = Math.max(0, Number(max.value || 0));
+                const split = freeValue + Math.max(0, maxValue - freeValue) / 2;
+                byId('overviewRange').textContent = maxValue.toLocaleString('vi-VN', { maximumFractionDigits: 2 });
+                byId('overviewFree').textContent = freeValue.toLocaleString('vi-VN', { maximumFractionDigits: 2 });
+                byId('overviewSameWard').textContent = Number(sameWardEstimate.value || 0).toLocaleString('vi-VN', { maximumFractionDigits: 2 });
+                byId('overviewOtherWard').textContent = Number(otherWardEstimate.value || 0).toLocaleString('vi-VN', { maximumFractionDigits: 2 });
+                byId('nearFeeLabel').textContent = `Phí khu vực gần (từ ${freeValue} đến dưới ${split} km)`;
+                byId('farFeeLabel').textContent = `Phí khu vực xa (từ ${split} đến ${maxValue} km)`;
+                byId('previewFree').textContent = `${freeValue} km`;
+                byId('previewNear').textContent = money(nearFee.value);
+                byId('previewFar').textContent = money(farFee.value);
+                byId('previewMax').textContent = `${maxValue} km`;
+                byId('overviewPayments').textContent = cod.checked && qr.checked ? 'COD · VietQR' : cod.checked ? 'COD' : qr.checked ? 'VietQR' : 'Chưa bật';
+            };
+            [free, max, nearFee, farFee, sameWardEstimate, otherWardEstimate, cod, qr].forEach(input => input.addEventListener('input', updatePreview));
+
+            const testDistance = byId('deliveryTestDistance');
+            const testResult = byId('deliveryTestResult');
+            const updateFeeTest = () => {
+                const distance = Number(testDistance.value || 0);
+                const freeValue = Math.max(0, Number(free.value || 0));
+                const maxValue = Math.max(0, Number(max.value || 0));
+                const split = freeValue + Math.max(0, maxValue - freeValue) / 2;
+                if (distance > maxValue) {
+                    testResult.textContent = `Ngoài phạm vi giao hàng · tối đa ${maxValue} km`;
+                    testResult.dataset.state = 'outside';
+                } else {
+                    const fee = distance < freeValue ? 0 : distance < split ? Number(nearFee.value || 0) : Number(farFee.value || 0);
+                    testResult.textContent = fee === 0 ? 'Miễn phí · 0 ₫' : `Phí dự kiến · ${money(fee)}`;
+                    testResult.dataset.state = fee === 0 ? 'free' : 'fee';
+                }
+            };
+            testDistance.addEventListener('input', updateFeeTest);
+            [free, max, nearFee, farFee].forEach(input => input.addEventListener('input', updateFeeTest));
+
+            const picker = byId('bankPicker');
+            const binInput = byId('NganHangBin');
+            const nameInput = byId('TenNganHang');
+            if (picker && binInput && nameInput) {
+                if (binInput.value === '000000' && /\bmb\b/i.test(nameInput.value)) binInput.value = '970422';
+                let option = [...picker.options].find(item => item.value === binInput.value);
+                if (!option && binInput.value) {
+                    option = new Option(nameInput.value + ' (' + binInput.value + ')', binInput.value);
+                    option.dataset.name = nameInput.value;
+                    picker.add(option, 0);
+                }
+                if (option) picker.value = option.value;
+                else { picker.value = '970422'; binInput.value = '970422'; nameInput.value = 'MBBank'; }
+                picker.addEventListener('change', () => {
+                    const selected = picker.selectedOptions[0];
+                    binInput.value = selected.value;
+                    nameInput.value = selected.dataset.name || selected.textContent.trim();
+                });
+            }
+            updatePreview();
+            updateFeeTest();
+
+            const form = document.querySelector('.delivery-settings-form');
+            const saveState = byId('settingsSaveState');
+            const snapshot = () => [...form.querySelectorAll('input[name], select[name], textarea[name]')]
+                .map(input => `${input.name}:${input.type === 'checkbox' ? input.checked : input.value}`).join('|');
+            let initialState = snapshot();
+            let hasUnsavedChanges = false;
+            const checkDirty = () => {
+                hasUnsavedChanges = snapshot() !== initialState;
+                saveState.textContent = hasUnsavedChanges ? 'Bạn có thay đổi chưa lưu' : 'Cấu hình đã tải';
+                saveState.dataset.dirty = String(hasUnsavedChanges);
+            };
+            form.querySelectorAll('input[name], select[name], textarea[name]').forEach(input => {
+                input.addEventListener('input', checkDirty);
+                input.addEventListener('change', checkDirty);
+            });
+            form.addEventListener('submit', () => { hasUnsavedChanges = false; });
+            window.addEventListener('beforeunload', event => {
+                if (!hasUnsavedChanges) return;
+                event.preventDefault();
+                event.returnValue = '';
+            });
+        })();
+    </script>
+}

@@ -1,0 +1,56 @@
+@model KhuyenMai
+@{
+    ViewData["Title"] = Model.KhuyenMaiID == 0 ? "Thêm khuyến mãi" : "Sửa khuyến mãi";
+}
+
+<div class="admin-toolbar">
+    <div>
+        <h2>@ViewData["Title"]</h2>
+    </div>
+    <a asp-action="Index" class="btn btn-outline-primary">Quay lại</a>
+</div>
+
+<form asp-action="Save" method="post" class="admin-card p-4">
+    <input asp-for="KhuyenMaiID" type="hidden" />
+    <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+    <div class="row g-3">
+        <div class="col-md-4">
+            <label asp-for="MaKhuyenMai" class="form-label">Mã khuyến mãi</label>
+            <input asp-for="MaKhuyenMai" class="form-control" />
+            <span asp-validation-for="MaKhuyenMai" class="text-danger"></span>
+        </div>
+        <div class="col-md-5">
+            <label asp-for="TenKhuyenMai" class="form-label">Tên khuyến mãi</label>
+            <input asp-for="TenKhuyenMai" class="form-control" />
+            <span asp-validation-for="TenKhuyenMai" class="text-danger"></span>
+        </div>
+        <div class="col-md-3">
+            <label asp-for="PhanTramGiam" class="form-label">% giảm</label>
+            <input asp-for="PhanTramGiam" type="number" min="1" max="100" class="form-control" />
+            <span asp-validation-for="PhanTramGiam" class="text-danger"></span>
+        </div>
+        <div class="col-md-6">
+            <label asp-for="NgayBatDau" class="form-label">Ngày bắt đầu</label>
+            <input asp-for="NgayBatDau" type="date" class="form-control" />
+        </div>
+        <div class="col-md-6">
+            <label asp-for="NgayKetThuc" class="form-label">Ngày kết thúc</label>
+            <input asp-for="NgayKetThuc" type="date" class="form-control" />
+            <span asp-validation-for="NgayKetThuc" class="text-danger"></span>
+        </div>
+        <div class="col-12">
+            <div class="form-check admin-check">
+                <input asp-for="TrangThai" class="form-check-input" />
+                <label asp-for="TrangThai" class="form-check-label">Đang áp dụng</label>
+            </div>
+        </div>
+        <div class="col-12 d-flex gap-2">
+            <button class="btn btn-primary">Lưu khuyến mãi</button>
+            <a asp-action="Index" class="btn btn-outline-secondary">Hủy</a>
+        </div>
+    </div>
+</form>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

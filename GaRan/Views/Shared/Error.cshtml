@@ -1,0 +1,14 @@
+@model ErrorViewModel
+@{
+    ViewData["Title"] = "Lỗi hệ thống";
+}
+
+<div class="container section-pad">
+    <h1 class="text-danger">Đã xảy ra lỗi.</h1>
+    <h2 class="h5">Không thể xử lý yêu cầu này.</h2>
+
+    @if (Model.ShowRequestId)
+    {
+        <p><strong>Mã yêu cầu:</strong> <code>@Model.RequestId</code></p>
+    }
+</div>

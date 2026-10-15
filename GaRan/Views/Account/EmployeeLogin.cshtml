@@ -1,0 +1,37 @@
+@model LoginVM
+@{
+    ViewData["Title"] = "Đăng nhập nhân viên";
+    Layout = "_InternalLayout";
+}
+
+<main class="internal-auth-shell employee-auth-shell">
+    <section class="internal-auth-card">
+        <div class="internal-auth-visual employee-auth-visual">
+            <a class="internal-brand-lockup" asp-action="StaffLogin"><span class="internal-mascot">🐔</span><span><strong>GaRan</strong><small>Nhân viên</small></span></a>
+            <div class="internal-visual-copy"><span class="internal-overline">KHU VỰC NHÂN VIÊN</span><h1>Cùng nhau<br /><em>phục vụ tốt</em><br />mỗi ngày.</h1><p>Truy cập đơn hàng, theo dõi giao nhận và hóa đơn của cửa hàng.</p></div>
+            <div class="internal-feature-list"><span><b>✓</b> Xác nhận và cập nhật đơn</span><span><b>✓</b> Theo dõi tiến trình giao hàng</span><span><b>✓</b> Tra cứu hóa đơn</span></div>
+            <div class="internal-food-art" aria-hidden="true"><span>🍗</span><span>🍟</span><span>🥤</span></div>
+            <div class="internal-visual-note">Good Food · Good Mood!</div>
+        </div>
+        <div class="internal-auth-form-pane">
+            <a asp-action="StaffLogin" class="internal-back-link">← Chọn khu vực đăng nhập</a>
+            <div class="internal-auth-badge">🔒 CỔNG NỘI BỘ</div>
+            <div class="internal-form-logo">🐔</div>
+            <h2>Đăng nhập nhân viên</h2>
+            <p class="internal-form-subtitle">Dùng tài khoản nhân viên do quản lý cấp.</p>
+            <form asp-action="EmployeeLogin" method="post" class="internal-login-form">
+                <div asp-validation-summary="ModelOnly" class="internal-validation-summary"></div>
+                <label asp-for="UsernameOrEmail">Tên đăng nhập hoặc email</label>
+                <div class="internal-input-wrap"><span aria-hidden="true">♙</span><input asp-for="UsernameOrEmail" autocomplete="username" placeholder="Nhập tài khoản" /></div>
+                <span asp-validation-for="UsernameOrEmail" class="text-danger small"></span>
+                <label asp-for="Password">Mật khẩu</label>
+                <div class="internal-input-wrap"><span aria-hidden="true">▣</span><input asp-for="Password" autocomplete="current-password" placeholder="Nhập mật khẩu" /></div>
+                <span asp-validation-for="Password" class="text-danger small"></span>
+                <button type="submit" class="internal-submit-button"><span>↪</span> Vào khu xử lý đơn</button>
+            </form>
+            <div class="internal-auth-help"><span>Cần hỗ trợ đăng nhập?</span><strong>@await Component.InvokeAsync("StoreContact")</strong></div>
+        </div>
+    </section>
+</main>
+
+@section Scripts { <partial name="_ValidationScriptsPartial" /> }

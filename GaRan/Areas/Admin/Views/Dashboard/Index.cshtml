@@ -1,0 +1,107 @@
+@model DashboardVM
+@using System.Globalization
+@{
+    ViewData["Title"] = "Tổng quan";
+    var change = Model.DoanhThuThangTruoc > 0
+        ? (Model.DoanhThuThangNay - Model.DoanhThuThangTruoc) / Model.DoanhThuThangTruoc * 100m
+        : (decimal?)null;
+    var changeClass = change >= 0 ? "positive" : "negative";
+    var monthName = DateTime.Now.ToString("MM/yyyy");
+    var vi = CultureInfo.GetCultureInfo("vi-VN");
+    var maxTop = Model.TopMonBanChay.Select(x => x.Amount).DefaultIfEmpty(0).Max();
+    var categoryTotal = Model.DoanhThuTheoDanhMuc.Sum(x => x.Amount);
+}
+
+<section class="dashboard-welcome">
+    <div class="dashboard-welcome-copy">
+        <span class="dashboard-welcome-mascot">🐔</span>
+        <div><span class="dashboard-eyebrow">TRUNG TÂM VẬN HÀNH GARAN</span><h2>Chào mừng trở lại,<br /><strong>Quản trị viên 👋</strong></h2><p>Cùng GaRan quản lý cửa hàng hiệu quả hơn mỗi ngày!</p></div>
+    </div>
+    <div class="dashboard-date"><span>◷</span><div><strong>@DateTime.Now.ToString("dddd, dd MMMM yyyy", vi)</strong><small>Dữ liệu cập nhật theo đơn hàng thực tế</small></div></div>
+</section>
+
+<div class="dashboard-overview-grid">
+    <div class="dashboard-main-column">
+        <div class="dashboard-kpis">
+            <article class="dashboard-kpi kpi-orders"><div class="kpi-topline"><span>Đơn hàng tháng này</span><span class="kpi-icon">▤</span></div><strong class="kpi-value">@Model.DonHangThangNay</strong><div class="kpi-foot"><span>Hôm nay @Model.TongDonHang · @Model.DonHangChoXuLy chờ xác nhận</span></div></article>
+            <article class="dashboard-kpi kpi-revenue"><div class="kpi-topline"><span>Doanh thu tháng này</span><span class="kpi-icon">₫</span></div><strong class="kpi-value">@Model.DoanhThuThangNay.ToString("N0") <small>đ</small></strong><div class="kpi-foot">@if (change.HasValue){<span class="kpi-change @changeClass">@(change >= 0 ? "▲" : "▼") @Math.Abs(change.Value).ToString("0.#")%</span><span>so với tháng trước</span>}else{<span>Tháng @monthName</span>}</div></article>
+            <article class="dashboard-kpi kpi-customers"><div class="kpi-topline"><span>Khách hàng mới</span><span class="kpi-icon">♙</span></div><strong class="kpi-value">@Model.KhachHangMoiThang</strong><div class="kpi-foot"><a asp-area="Admin" asp-controller="User" asp-action="Customers">@Model.TongKhachHang khách trong hệ thống →</a></div></article>
+            <article class="dashboard-kpi kpi-pending"><div class="kpi-topline"><span>Món bán chạy nhất</span><span class="kpi-icon">🍗</span></div><strong class="kpi-value">@(Model.TopMonBanChay.FirstOrDefault()?.Amount.ToString("N0") ?? "0") <small>phần</small></strong><div class="kpi-foot"><span class="dashboard-truncate">@(Model.TopMonBanChay.FirstOrDefault()?.Label ?? "Chưa có dữ liệu bán")</span></div></article>
+        </div>
+
+        <div class="dashboard-chart-grid">
+            <section class="admin-card chart-box revenue-chart-card">
+                <div class="admin-card-header"><div><h3>Doanh thu theo thời gian</h3><span class="chart-subtitle">12 tháng gần nhất · đơn hoàn thành</span></div><span class="chart-period-badge">12 THÁNG</span></div>
+                <div class="admin-card-body chart-body"><canvas id="monthChart" aria-label="Biểu đồ doanh thu 12 tháng gần nhất"></canvas></div>
+            </section>
+            <section class="admin-card chart-box category-chart-card">
+                <div class="admin-card-header"><div><h3>Doanh thu theo danh mục</h3><span class="chart-subtitle">Từ các đơn hoàn thành</span></div></div>
+                @if (Model.DoanhThuTheoDanhMuc.Any())
+                {
+                    <div class="category-chart-content"><div class="category-doughnut"><canvas id="categoryChart" aria-label="Biểu đồ doanh thu theo danh mục"></canvas><div class="category-doughnut-total"><strong>@categoryTotal.ToString("N0") đ</strong><span>TỔNG DOANH THU</span></div></div><div class="category-legend">@foreach (var category in Model.DoanhThuTheoDanhMuc){<div><i></i><span>@category.Label</span><strong>@(categoryTotal == 0 ? 0 : Math.Round(category.Amount * 100 / categoryTotal, 1))%</strong></div>}</div></div>
+                }
+                else { <div class="dashboard-empty-state">Chưa có doanh thu theo danh mục</div> }
+            </section>
+        </div>
+
+        <div class="dashboard-lower-grid">
+            <section class="admin-card dashboard-orders-card">
+                <div class="admin-card-header"><div><h3>Đơn hàng gần đây</h3><span class="chart-subtitle">Những đơn mới nhất trong cửa hàng</span></div><a asp-area="Admin" asp-controller="OrderAdmin" asp-action="Index" class="dashboard-view-all">Xem tất cả →</a></div>
+                @if (Model.DonHangGanDay.Any())
+                {
+                    <div class="table-responsive"><table class="table dashboard-orders-table"><thead><tr><th>Mã đơn</th><th>Khách hàng</th><th>Tổng tiền</th><th>Trạng thái</th><th>Thời gian</th></tr></thead><tbody>@foreach (var order in Model.DonHangGanDay){<tr><td><strong>#@order.DonHangID</strong></td><td>@order.TenKhach</td><td class="dashboard-money">@order.TongTien.ToString("N0") đ</td><td><span class="dashboard-status-pill">@order.TrangThai</span></td><td>@order.NgayDat.ToString("HH:mm")</td></tr>}</tbody></table></div>
+                }
+                else { <div class="dashboard-empty-state">Chưa có đơn hàng nào</div> }
+            </section>
+            <section class="admin-card dashboard-top-food-card">
+                <div class="admin-card-header"><div><h3>Top món bán chạy</h3><span class="chart-subtitle">Theo số lượng đã bán</span></div><a asp-area="Admin" asp-controller="Food" asp-action="Index" class="dashboard-view-all">Thực đơn →</a></div>
+                @if (Model.TopMonBanChay.Any())
+                {
+                    <div class="dashboard-top-food-list">@for (var i = 0; i < Model.TopMonBanChay.Count; i++){var food = Model.TopMonBanChay[i];var width = maxTop == 0 ? 0 : (double)(food.Amount * 100 / maxTop);<div class="dashboard-top-food-row"><span class="dashboard-rank">@(i + 1)</span><span class="dashboard-food-emoji">@(i == 0 ? "🍗" : i == 1 ? "🍔" : i == 2 ? "🍟" : "🥤")</span><div class="dashboard-food-info"><div><strong>@food.Label</strong><small>@food.Amount.ToString("N0") phần</small></div><div class="dashboard-food-bar"><i style="width:@(width.ToString("0.#", CultureInfo.InvariantCulture))%"></i></div></div></div>}</div>
+                }
+                else { <div class="dashboard-empty-state">Chưa có dữ liệu bán hàng</div> }
+            </section>
+        </div>
+    </div>
+
+    <aside class="dashboard-side-column">
+        <a asp-area="Admin" asp-controller="OrderAdmin" asp-action="Index" class="dashboard-promo-card"><div><span>🍗 GaRan</span><strong>Gà giòn rụm,<br />hương vị thật!</strong><small>Xem đơn hàng <b>→</b></small></div><span class="dashboard-promo-food" aria-hidden="true">🍗</span></a>
+        <section class="admin-card dashboard-activity-card">
+            <div class="admin-card-header"><div><h3>Hoạt động gần đây</h3><span class="chart-subtitle">Cập nhật từ cửa hàng</span></div><span class="dashboard-activity-mark">✦</span></div>
+            @if (Model.HoatDongGanDay.Any())
+            {
+                <div class="dashboard-activity-list">@foreach (var activity in Model.HoatDongGanDay){<article class="dashboard-activity-item"><span class="dashboard-activity-icon">@activity.BieuTuong</span><div><strong>@activity.TieuDe</strong><p>@activity.MoTa</p>@if (!string.IsNullOrWhiteSpace(activity.GiaTri)){<b>@activity.GiaTri</b>}</div><time>@activity.ThoiGian.ToString("HH:mm")</time></article>}</div>
+            }
+            else { <div class="dashboard-empty-state">Chưa có hoạt động mới</div> }
+        </section>
+        <section class="admin-card dashboard-store-card">
+            <div class="admin-card-header"><div><h3>Tình hình cửa hàng</h3><span class="chart-subtitle">Tổng quan danh mục & đánh giá</span></div><span class="dashboard-activity-mark">▣</span></div>
+            <a asp-area="Admin" asp-controller="Food" asp-action="Index" class="dashboard-store-row"><span class="dashboard-store-icon store-red">🍗</span><span>Món đang kinh doanh</span><strong>@Model.TongMonDangBan</strong></a>
+            <a asp-area="Admin" asp-controller="Category" asp-action="Index" class="dashboard-store-row"><span class="dashboard-store-icon store-gold">▦</span><span>Danh mục hoạt động</span><strong>@Model.TongDanhMuc</strong></a>
+            <a asp-area="Admin" asp-controller="ReviewAdmin" asp-action="Index" class="dashboard-store-row"><span class="dashboard-store-icon store-green">⭐</span><span>Đánh giá chờ duyệt</span><strong>@Model.TongDanhGiaChoDuyet</strong></a>
+        </section>
+    </aside>
+</div>
+
+@section Scripts {
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+(() => {
+    if (!window.Chart) return;
+    const palette = ['#d71920', '#f0a821', '#4c8c72', '#6483c4', '#915bc1', '#e26c3d', '#477f9a'];
+    const money = value => new Intl.NumberFormat('vi-VN', { maximumFractionDigits: 0 }).format(value) + ' ₫';
+    const monthCanvas = document.getElementById('monthChart');
+    if (monthCanvas) new Chart(monthCanvas, {
+        type: 'line',
+        data: { labels: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.DoanhThuTheoThang.Select(x => x.Label))), datasets: [{ label: 'Doanh thu', data: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.DoanhThuTheoThang.Select(x => x.Amount))), borderColor: '#e21d2b', backgroundColor: 'rgba(226,29,43,.1)', pointBackgroundColor: '#fff', pointBorderColor: '#e21d2b', pointBorderWidth: 2, pointRadius: 3, borderWidth: 2.5, fill: true, tension: .36 }] },
+        options: { responsive: true, maintainAspectRatio: false, interaction: { intersect: false, mode: 'index' }, plugins: { legend: { display: false }, tooltip: { callbacks: { label: context => ' ' + money(context.parsed.y) } } }, scales: { y: { beginAtZero: true, grid: { color: '#f2ece9' }, border: { display: false }, ticks: { maxTicksLimit: 5, callback: value => new Intl.NumberFormat('vi-VN', { notation: 'compact', maximumFractionDigits: 1 }).format(value) } }, x: { grid: { display: false }, border: { display: false }, ticks: { maxRotation: 0, font: { size: 9 } } } } }
+    });
+    const categoryCanvas = document.getElementById('categoryChart');
+    if (categoryCanvas) new Chart(categoryCanvas, {
+        type: 'doughnut',
+        data: { labels: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.DoanhThuTheoDanhMuc.Select(x => x.Label))), datasets: [{ data: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.DoanhThuTheoDanhMuc.Select(x => x.Amount))), backgroundColor: palette, borderColor: '#fff', borderWidth: 3, hoverOffset: 4 }] },
+        options: { responsive: true, maintainAspectRatio: false, cutout: '70%', plugins: { legend: { display: false }, tooltip: { callbacks: { label: context => ` ${context.label}: ${money(context.parsed)}` } } } }
+    });
+})();
+</script>
+}

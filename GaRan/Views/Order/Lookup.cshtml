@@ -1,0 +1,66 @@
+@model OrderLookupVM
+@{
+    ViewData["Title"] = "Tra cứu đơn hàng";
+    var order = Model.Order;
+    var payment = order?.ThanhToans.FirstOrDefault();
+}
+<div class="container section-pad receipt-page order-confirmation-page">
+    <h1 class="fw-bold mb-4 no-print">Tra cứu đơn hàng</h1>
+    @if (order == null)
+    {
+        <form method="post" class="food-card p-4 h-auto no-print" style="max-width:640px">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <div class="mb-3"><label asp-for="Code" class="form-label">Mã đơn hàng</label><input asp-for="Code" class="form-control" required /><span asp-validation-for="Code" class="text-danger"></span></div>
+            <div class="mb-3"><label asp-for="Contact" class="form-label">Số điện thoại hoặc email đặt hàng</label><input asp-for="Contact" class="form-control" required /></div>
+            <button class="btn btn-primary">Tra cứu</button>
+        </form>
+    }
+    else
+    {
+        <div class="receipt-actions no-print">
+            <a asp-controller="Home" asp-action="Index" class="btn btn-outline-secondary">Về trang chủ</a>
+        </div>
+        <div class="row g-4 screen-only">
+            <div class="col-lg-7">
+                <section class="food-card p-4 h-auto">
+                    <h2 class="h3 fw-bold">Đơn hàng #@order.DonHangID</h2>
+                    <div class="text-muted mb-3">Đặt lúc: @order.NgayDat.ToString("dd/MM/yyyy HH:mm") · Trạng thái: @order.TrangThaiDonHang</div>
+                    <h3 class="h5">@(ViewBag.StoreName ?? "GaRan")</h3>
+                    <div>@ViewBag.StoreAddress</div><div class="text-muted">@ViewBag.StorePhone</div>
+                    <div class="table-responsive mt-4"><table class="table align-middle order-screen-table">
+                        <thead><tr><th>Món</th><th class="text-center">Số lượng</th><th class="text-end">Đơn giá</th><th class="text-end">Thành tiền</th></tr></thead>
+                        <tbody>@foreach (var line in order.ChiTietDonHangs) { <tr><td>@line.MonAn?.TenMon</td><td class="text-center">@line.SoLuong</td><td class="text-end">@line.DonGia.ToString("N0") đ</td><td class="text-end">@line.ThanhTien.ToString("N0") đ</td></tr> }</tbody>
+                    </table></div>
+                </section>
+            </div>
+            <div class="col-lg-5"><section class="food-card p-4 h-auto order-screen-summary">
+                <h2 class="h5 fw-bold">Thông tin đơn hàng</h2>
+                <div><strong>Khách:</strong> @(order.TenKhachDat ?? order.KhachHang?.HoTen ?? "-")</div>
+                <div><strong>Email:</strong> @(order.EmailKhachDat ?? order.KhachHang?.Email ?? "-")</div>
+                <div><strong>Địa chỉ:</strong> @order.DiaChiGiaoHang</div>
+                <div><strong>Điện thoại:</strong> @order.SoDienThoaiNhan</div>
+                <hr />
+                <div class="order-screen-total">@order.TongTien.ToString("N0") đ</div>
+                @if (order.TienGiamThanhVien > 0) { <div class="small text-success">Ưu đãi thành viên VIP: -@order.TienGiamThanhVien.ToString("N0") đ</div> }
+                <div class="small text-muted">Tiền hàng @order.TienHang.ToString("N0") đ · Thuế @order.TienThue.ToString("N0") đ · Giao hàng @order.PhiGiaoHang.ToString("N0") đ</div>
+                <div class="mt-2"><strong>Phương thức:</strong> @(payment?.PhuongThucThanhToan switch { "COD" => "Thanh toán khi nhận hàng (COD)", "QR" => "Thanh toán QR", "Bank" => "Chuyển khoản ngân hàng", _ => "Chưa xác định" })</div>
+                <div><strong>Thanh toán:</strong> @(payment?.TrangThaiThanhToan ?? "Chưa thanh toán")</div>
+                @if (payment?.PhuongThucThanhToan is "QR" or "Bank")
+                {
+                    var bankBin = ViewBag.BankBin as string ?? string.Empty;
+                    var bankAccount = ViewBag.BankAccount as string ?? string.Empty;
+                    var bankOwner = ViewBag.BankOwner as string ?? string.Empty;
+                    var transferNote = payment.MaGiaoDich ?? $"WOCORDER{order.DonHangID}";
+                    if (!string.IsNullOrWhiteSpace(bankBin) && !string.IsNullOrWhiteSpace(bankAccount))
+                    {
+                        var amount = order.TongTien.ToString("0", System.Globalization.CultureInfo.InvariantCulture);
+                        var qrUrl = $"https://img.vietqr.io/image/{Uri.EscapeDataString(bankBin)}-{Uri.EscapeDataString(bankAccount)}-compact2.png?amount={amount}&addInfo={Uri.EscapeDataString(transferNote)}&accountName={Uri.EscapeDataString(bankOwner)}";
+                        <div class="order-screen-qr"><h3 class="h6 fw-bold">Mã QR chuyển khoản ngân hàng</h3><img src="@qrUrl" alt="QR thanh toán đơn hàng #@order.DonHangID" class="bank-qr-image" />
+                            <div class="order-bank-info"><div>Ngân hàng: <strong>@ViewBag.BankName</strong></div><div>Tên tài khoản: <strong>@bankOwner</strong></div><div>Số tài khoản: <strong>@bankAccount</strong></div><div>Số tiền: <strong>@order.TongTien.ToString("N0") đ</strong></div><div>Nội dung: <strong>@transferNote</strong></div></div>
+                        </div>
+                    }
+                }
+            </section></div>
+        </div>
+    }
+</div>

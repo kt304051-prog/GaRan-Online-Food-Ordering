@@ -1,0 +1,62 @@
+@model NguoiDung
+@{
+    ViewData["Title"] = Model.NguoiDungID == 0 ? "Thêm tài khoản" : "Sửa tài khoản";
+}
+
+<div class="admin-toolbar">
+    <div>
+        <h2>@ViewData["Title"]</h2>
+    </div>
+    <a asp-action="Index" class="btn btn-outline-primary">Quay lại</a>
+</div>
+
+<form asp-action="Save" method="post" class="admin-card p-4">
+    <input asp-for="NguoiDungID" type="hidden" />
+    <input asp-for="MatKhauHash" type="hidden" />
+    <input asp-for="NgayTao" type="hidden" />
+    <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+    <div class="row g-3">
+        <div class="col-md-6">
+            <label asp-for="HoTen" class="form-label">Họ tên</label>
+            <input asp-for="HoTen" class="form-control" />
+            <span asp-validation-for="HoTen" class="text-danger"></span>
+        </div>
+        <div class="col-md-6">
+            <label asp-for="TenDangNhap" class="form-label">Tên đăng nhập</label>
+            <input asp-for="TenDangNhap" class="form-control" />
+            <span asp-validation-for="TenDangNhap" class="text-danger"></span>
+        </div>
+        <div class="col-md-6">
+            <label asp-for="Email" class="form-label">Email</label>
+            <input asp-for="Email" type="email" class="form-control" />
+            <span asp-validation-for="Email" class="text-danger"></span>
+        </div>
+        <div class="col-md-6">
+            <label asp-for="SoDienThoai" class="form-label">Số điện thoại</label>
+            <input asp-for="SoDienThoai" class="form-control" />
+            <span asp-validation-for="SoDienThoai" class="text-danger"></span>
+        </div>
+        <div class="col-md-6">
+            <label asp-for="VaiTroID" class="form-label">Vai trò</label>
+            <select asp-for="VaiTroID" asp-items="ViewBag.VaiTroID" class="form-select"></select>
+        </div>
+        <div class="col-md-6">
+            <label class="form-label">Mật khẩu @(Model.NguoiDungID == 0 ? "" : "mới")</label>
+            <input name="password" type="password" class="form-control" autocomplete="new-password" />
+        </div>
+        <div class="col-12">
+            <div class="form-check admin-check">
+                <input asp-for="TrangThai" class="form-check-input" />
+                <label asp-for="TrangThai" class="form-check-label">Hoạt động</label>
+            </div>
+        </div>
+        <div class="col-12 d-flex gap-2">
+            <button class="btn btn-primary">Lưu tài khoản</button>
+            <a asp-action="Index" class="btn btn-outline-secondary">Hủy</a>
+        </div>
+    </div>
+</form>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

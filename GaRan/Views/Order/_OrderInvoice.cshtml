@@ -1,0 +1,117 @@
+@model OrderVM
+@{
+    var order = Model.DonHang;
+    var payment = order.ThanhToans.FirstOrDefault();
+    var isBankPayment = payment?.PhuongThucThanhToan is "QR" or "Bank";
+    var transferNote = payment?.MaGiaoDich ?? $"WOCORDER{order.DonHangID}";
+    var subtotal = Model.ChiTiet.Sum(x => x.ThanhTien);
+    var discount = Math.Max(0, subtotal - order.TienHang);
+    var voucherDiscount = Math.Max(0, discount - order.TienGiamDiem - order.TienGiamThanhVien);
+    var paymentMethod = payment?.PhuongThucThanhToan switch
+    {
+        "COD" => "Tiền mặt khi nhận hàng (COD)",
+        "QR" => "Thanh toán bằng mã QR",
+        "Bank" => "Chuyển khoản ngân hàng",
+        _ => "Chưa xác định"
+    };
+}
+<article id="invoiceContent" class="receipt">
+    <header class="receipt-store">
+        <h1>@(ViewBag.StoreName ?? "GaRan")</h1>
+        @if (!string.IsNullOrWhiteSpace(ViewBag.StoreAddress as string))
+        {
+            <div>@ViewBag.StoreAddress</div>
+        }
+        <div>
+            @if (!string.IsNullOrWhiteSpace(ViewBag.StorePhone as string)) { <span>Điện thoại: @ViewBag.StorePhone</span> }
+            @if (!string.IsNullOrWhiteSpace(ViewBag.StoreEmail as string)) { <span> · @ViewBag.StoreEmail</span> }
+        </div>
+    </header>
+
+    <div class="receipt-title">
+        <h2>HÓA ĐƠN ĐẶT HÀNG</h2>
+        <div><strong>Mã đơn:</strong> DH@(order.DonHangID.ToString("D8"))</div>
+        <div><strong>Ngày giờ đặt:</strong> @order.NgayDat.ToString("dd/MM/yyyy HH:mm")</div>
+    </div>
+
+    <section class="receipt-customer">
+        <div><strong>Khách hàng:</strong> @(order.TenKhachDat ?? order.KhachHang?.HoTen ?? "-")</div>
+        <div><strong>Số điện thoại:</strong> @(order.SoDienThoaiNhan ?? "-")</div>
+        <div><strong>Email:</strong> @(order.EmailKhachDat ?? order.KhachHang?.Email ?? "-")</div>
+        <div><strong>Địa chỉ giao hàng:</strong> @order.DiaChiGiaoHang</div>
+    </section>
+
+    @if (!string.IsNullOrWhiteSpace(order.GhiChu))
+    {
+        <section class="receipt-customer"><strong>Ghi chú đơn hàng:</strong> @order.GhiChu</section>
+    }
+
+    <section class="receipt-lines">
+        <h3>Chi tiết món ăn</h3>
+        <div class="table-responsive">
+            <table class="table receipt-table">
+                <thead><tr><th>Món ăn</th><th class="text-center">SL</th><th class="text-end">Đơn giá</th><th class="text-end">Thành tiền</th></tr></thead>
+                <tbody>
+                @foreach (var line in Model.ChiTiet)
+                {
+                    <tr>
+                        <td>@line.MonAn?.TenMon</td>
+                        <td class="text-center">@line.SoLuong</td>
+                        <td class="text-end">@line.DonGia.ToString("N0") đ</td>
+                        <td class="text-end">@line.ThanhTien.ToString("N0") đ</td>
+                    </tr>
+                }
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+    <section class="receipt-totals">
+        <div><span>Tạm tính</span><strong>@subtotal.ToString("N0") đ</strong></div>
+        @if (voucherDiscount > 0)
+        {
+            <div><span>Giảm giá / Voucher</span><strong class="text-success">-@voucherDiscount.ToString("N0") đ</strong></div>
+        }
+        @if (order.TienGiamThanhVien > 0)
+        {
+            <div><span>Ưu đãi thành viên VIP</span><strong class="text-success">-@order.TienGiamThanhVien.ToString("N0") đ</strong></div>
+        }
+        @if (order.TienGiamDiem > 0)
+        {
+            <div><span>Đổi điểm tích lũy (@order.DiemDaDung điểm)</span><strong class="text-success">-@order.TienGiamDiem.ToString("N0") đ</strong></div>
+        }
+        @if (order.TienThue > 0)
+        {
+            <div><span>Thuế VAT</span><strong>@order.TienThue.ToString("N0") đ</strong></div>
+        }
+        <div><span>Phí giao hàng (@order.KhoangCachKm.ToString("0.00") km)</span><strong>@order.PhiGiaoHang.ToString("N0") đ</strong></div>
+        <div class="receipt-total"><span>TỔNG THANH TOÁN</span><strong>@order.TongTien.ToString("N0") đ</strong></div>
+    </section>
+
+    <section class="receipt-payment">
+        <div><strong>Phương thức thanh toán:</strong> @paymentMethod</div>
+        <div><strong>Trạng thái:</strong> @(payment?.TrangThaiThanhToan ?? "Chưa thanh toán")</div>
+        @if (isBankPayment)
+        {
+            <div class="receipt-transfer-note"><strong>Nội dung chuyển khoản:</strong> @transferNote</div>
+            @if (!string.IsNullOrWhiteSpace(ViewBag.BankBin as string) && !string.IsNullOrWhiteSpace(ViewBag.BankAccount as string))
+            {
+                var bankBin = ViewBag.BankBin as string ?? string.Empty;
+                var bankAccount = ViewBag.BankAccount as string ?? string.Empty;
+                var bankOwner = ViewBag.BankOwner as string ?? string.Empty;
+                var amount = order.TongTien.ToString("0", System.Globalization.CultureInfo.InvariantCulture);
+                var qrUrl = $"https://img.vietqr.io/image/{Uri.EscapeDataString(bankBin)}-{Uri.EscapeDataString(bankAccount)}-compact2.png?amount={amount}&addInfo={Uri.EscapeDataString(transferNote)}&accountName={Uri.EscapeDataString(bankOwner)}";
+                <div class="receipt-qr">
+                    <img src="@qrUrl" alt="Mã QR thanh toán đơn hàng DH@(order.DonHangID.ToString("D8"))" class="bank-qr-image" />
+                </div>
+                <div class="receipt-bank-details">
+                    <span>Ngân hàng: <strong>@ViewBag.BankName</strong></span>
+                    <span>Chủ tài khoản: <strong>@bankOwner</strong></span>
+                    <span>Số tài khoản: <strong>@bankAccount</strong></span>
+                </div>
+            }
+        }
+    </section>
+
+    <footer class="receipt-thanks">Cảm ơn quý khách đã đặt hàng!</footer>
+</article>

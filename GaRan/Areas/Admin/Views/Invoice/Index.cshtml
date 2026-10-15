@@ -1,0 +1,68 @@
+@model List<HoaDon>
+@{
+    ViewData["Title"] = "Quản lý hóa đơn";
+}
+
+<div class="admin-toolbar">
+    <div>
+        <h2>Hóa đơn</h2>
+    </div>
+    <a asp-area="Admin" asp-controller="OrderAdmin" asp-action="Index" class="btn btn-outline-primary">Đơn hàng</a>
+</div>
+
+<form class="admin-card p-3 mb-3 d-flex flex-wrap align-items-end gap-2" method="get">
+    <div>
+        <label class="form-label mb-1" for="invoiceDate">Ngày lập hóa đơn</label>
+        <input id="invoiceDate" name="date" type="date" class="form-control" value="@ViewBag.SelectedDate" />
+    </div>
+    <button class="btn btn-outline-primary">Xem ngày</button>
+</form>
+
+@if (!Model.Any())
+{
+    <div class="admin-empty">
+        <h3 class="h5">Ngày này chưa có hóa đơn</h3>
+        <a asp-area="Admin" asp-controller="OrderAdmin" asp-action="Index" asp-route-date="@ViewBag.SelectedDate" class="btn btn-outline-primary">Xem đơn hàng ngày này</a>
+    </div>
+}
+else
+{
+    <div class="table-responsive">
+        <table class="table table-bordered align-middle">
+            <thead>
+                <tr>
+                    <th>Mã HĐ</th>
+                    <th>Đơn hàng</th>
+                    <th>Khách</th>
+                    <th>Người lập</th>
+                    <th>Ngày lập</th>
+                    <th>Tổng tiền</th>
+                    <th class="text-end">Thao tác</th>
+                </tr>
+            </thead>
+            <tbody>
+            @foreach (var item in Model)
+            {
+                <tr>
+                    <td class="fw-bold">#@item.HoaDonID</td>
+                    <td>#@item.DonHangID</td>
+                    <td>@(item.DonHang?.TenKhachDat ?? item.DonHang?.KhachHang?.HoTen)</td>
+                    <td>@(item.NguoiLap?.HoTen ?? "-")</td>
+                    <td>@item.NgayLap.ToString("dd/MM/yyyy HH:mm")</td>
+                    <td class="price">@item.TongTien.ToString("N0") đ</td>
+                    <td class="text-end">
+                        <a asp-area="Admin" asp-controller="OrderAdmin" asp-action="Details" asp-route-id="@item.DonHangID" class="btn btn-sm btn-outline-primary">Xem / in bill</a>
+                        @if (User.IsInRole("Admin"))
+                        {
+                            <form asp-action="Delete" method="post" class="d-inline" onsubmit="return confirm('Xóa hóa đơn này?');">
+                                <input type="hidden" name="id" value="@item.HoaDonID" />
+                                <button class="btn btn-sm btn-outline-danger">Xóa</button>
+                            </form>
+                        }
+                    </td>
+                </tr>
+            }
+            </tbody>
+        </table>
+    </div>
+}

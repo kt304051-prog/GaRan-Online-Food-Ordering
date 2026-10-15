@@ -1,0 +1,37 @@
+@model List<MonAn>
+@{
+    ViewData["Title"] = "Quản lý món ăn";
+}
+
+<section class="admin-page-heading"><div class="admin-page-title-icon">🍴</div><div><h2>Quản lý món ăn</h2><p>Quản lý thực đơn, giá bán và tình trạng kinh doanh</p></div><a asp-action="Create" class="btn admin-primary-action">＋ Thêm món ăn</a></section>
+
+<form class="admin-filter-card admin-filter-grid" method="get" asp-area="Admin" asp-controller="Food" asp-action="Index">
+    <div class="admin-search-field"><span>⌕</span><input name="q" value="@ViewBag.Query" class="form-control admin-local-search" placeholder="Nhập tên món ăn..." /></div>
+    <button class="btn admin-outline-action" type="submit">Tìm kiếm</button>
+</form>
+
+<section class="admin-data-card">
+    <div class="admin-data-card-heading"><div><strong>Thực đơn</strong><span>@Model.Count món trên trang này · Trang @ViewBag.Page / @ViewBag.TotalPages</span></div><span class="admin-record-count">@Model.Count món</span></div>
+    @if (!Model.Any())
+    {
+        <div class="admin-empty">Không tìm thấy món ăn phù hợp.</div>
+    }
+    else
+    {
+        <div class="table-responsive"><table class="table admin-data-table align-middle"><thead><tr><th>Ảnh</th><th>Tên món</th><th>Danh mục</th><th>Giá bán</th><th>Nổi bật</th><th>Trạng thái</th><th class="text-end">Thao tác</th></tr></thead><tbody>
+        @foreach (var item in Model)
+        {
+            <tr data-admin-search-row>
+                <td><div class="admin-food-thumbnail">@if (!string.IsNullOrWhiteSpace(item.HinhAnh)){<img src="@item.HinhAnh" alt="@item.TenMon" />}else{<span>🍗</span>}</div></td>
+                <td><strong class="admin-cell-title">@item.TenMon</strong><small class="admin-cell-subtitle">@(item.MoTa ?? "Món ăn GaRan")</small></td>
+                <td><span class="admin-soft-tag">@(item.DanhMuc?.TenDanhMuc ?? "Chưa phân loại")</span></td>
+                <td class="admin-money">@item.Gia.ToString("N0") đ</td>
+                <td>@if (item.NoiBat){<span class="admin-status-tag is-vip">★ Nổi bật</span>}else{<span class="admin-muted">—</span>}</td>
+                <td><span class="admin-status-tag @(item.TrangThai ? "is-active" : "is-inactive")">@(item.TrangThai ? "Đang bán" : "Ngừng bán")</span></td>
+                <td class="text-end"><div class="admin-row-actions"><a asp-action="Edit" asp-route-id="@item.MonAnID" class="admin-icon-action" aria-label="Sửa @item.TenMon" title="Sửa">✎</a><form asp-action="Delete" method="post" onsubmit="return confirm('Xóa món này? Nếu món đã có trong đơn hàng, hệ thống sẽ chuyển sang ngừng bán.');"><input type="hidden" name="id" value="@item.MonAnID" /><button class="admin-icon-action is-danger" aria-label="Xóa @item.TenMon" title="Xóa">♲</button></form></div></td>
+            </tr>
+        }
+        </tbody></table></div>
+        <div class="admin-table-footer"><span>@Model.Count món đang hiển thị</span><nav aria-label="Phân trang"><ul class="pagination admin-pagination mb-0">@for (var i = 1; i <= (int)ViewBag.TotalPages; i++){<li class="page-item @(i == (int)ViewBag.Page ? "active" : "")"><a class="page-link" asp-route-page="@i" asp-route-q="@ViewBag.Query">@i</a></li>}</ul></nav></div>
+    }
+</section>

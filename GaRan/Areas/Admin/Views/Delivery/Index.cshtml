@@ -1,0 +1,105 @@
+@model List<GiaoHang>
+@{
+    ViewData["Title"] = "Quản lý giao hàng";
+    var deliveryStatuses = new[] { "Chờ nhận", "Đang giao", "Giao thành công", "Giao thất bại" };
+}
+
+<div class="admin-toolbar">
+    <div>
+        <h2>Giao hàng</h2>
+    </div>
+    @if (User.IsInRole("Admin"))
+    {
+        <a asp-action="Settings" class="btn btn-outline-primary">Cấu hình phí</a>
+    }
+</div>
+
+<form class="admin-card p-3 mb-3" method="get" asp-area="Admin" asp-controller="Delivery" asp-action="Index" data-delivery-filters>
+    <div class="row g-2 align-items-end">
+        <div class="col-md-5">
+            <label class="form-label mb-1" for="deliveryDate">Ngày đơn hàng</label>
+            <input id="deliveryDate" name="date" type="date" class="form-control" value="@ViewBag.SelectedDate" />
+        </div>
+        <div class="col-md-5">
+            <label class="form-label mb-1" for="deliveryStatus">Trạng thái giao</label>
+            <select id="deliveryStatus" name="status" class="form-select">
+                <option value="">Tất cả trạng thái</option>
+                @foreach (var s in deliveryStatuses)
+                {
+                    <option value="@s" selected="@(ViewBag.Status == s)">@s</option>
+                }
+            </select>
+        </div>
+        <div class="col-md-2">
+            <a asp-action="Index" asp-route-date="@ViewBag.SelectedDate" class="btn btn-outline-secondary w-100">Xóa lọc</a>
+        </div>
+    </div>
+</form>
+
+@if (!Model.Any())
+{
+    <div class="admin-empty">Không có đơn giao hàng.</div>
+}
+else
+{
+    <div class="table-responsive">
+        <table class="table table-bordered align-middle">
+            <thead>
+                <tr>
+                    <th>Đơn</th>
+                    <th>Khách</th>
+                    <th>Ngày nhận</th>
+                    <th>Ngày giao</th>
+                    <th>Trạng thái</th>
+                    <th class="text-end">Cập nhật</th>
+                </tr>
+            </thead>
+            <tbody>
+            @foreach (var item in Model)
+            {
+                <tr>
+                    <td class="fw-bold">#@item.DonHangID</td>
+                    <td>
+                        <div class="fw-semibold">@(item.DonHang?.TenKhachDat ?? item.DonHang?.KhachHang?.HoTen)</div>
+                        <div class="small text-muted">@item.DonHang?.SoDienThoaiNhan · @item.DonHang?.KhoangCachKm.ToString("0.00") km</div>
+                        <div class="small text-muted">@item.DonHang?.DiaChiGiaoHang</div>
+                    </td>
+                    <td>@(item.NgayNhanDon?.ToString("dd/MM/yyyy HH:mm") ?? "-")</td>
+                    <td>@(item.NgayGiaoHang?.ToString("dd/MM/yyyy HH:mm") ?? "-")</td>
+                    <td><span class="badge badge-status">@item.TrangThaiGiaoHang</span></td>
+                    <td class="text-end">
+                        <form asp-action="UpdateStatus" method="post" class="admin-inline-form justify-content-end">
+                            <input type="hidden" name="id" value="@item.GiaoHangID" />
+                            <input type="hidden" name="returnDate" value="@ViewBag.SelectedDate" />
+                            <input type="hidden" name="returnStatus" value="@ViewBag.Status" />
+                            @if (item.TrangThaiGiaoHang is "Giao thành công" or "Giao thất bại")
+                            {
+                            }
+                            else
+                            {
+                                <select name="status" class="form-select form-select-sm">
+                                    @foreach (var s in deliveryStatuses)
+                                    {
+                                        <option value="@s" selected="@(s == item.TrangThaiGiaoHang)">@s</option>
+                                    }
+                                </select>
+                                <button class="btn btn-sm btn-primary">Lưu</button>
+                            }
+                        </form>
+                    </td>
+                </tr>
+            }
+            </tbody>
+        </table>
+    </div>
+}
+
+<script>
+    (() => {
+        const form = document.querySelector('[data-delivery-filters]');
+        if (!form) return;
+        form.querySelectorAll('input[name="date"], select[name="status"]').forEach(control => {
+            control.addEventListener('change', () => form.requestSubmit());
+        });
+    })();
+</script>

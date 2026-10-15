@@ -1,0 +1,100 @@
+@model ReviewIndexVM
+@{
+    ViewData["Title"] = "Đánh giá khách hàng";
+    var totalReviews = Math.Max(1, Model.Count);
+}
+
+<section class="reviews-hero">
+    <div class="container reviews-hero-inner">
+        <div class="reviews-hero-copy">
+            <span class="reviews-kicker">★ ĐÁNH GIÁ KHÁCH HÀNG</span>
+            <h1>Khách hàng nói gì về<br /><span>món ăn của GaRan?</span></h1>
+            <p>Chia sẻ chân thật từ khách hàng đã trải nghiệm món ăn và dịch vụ tại GaRan.</p>
+        </div>
+        <div class="reviews-hero-art" aria-hidden="true"><span class="review-art-chicken">🍗</span><span class="review-art-fries">🍟</span><span class="review-art-drink">🥤</span><b>Ngon<br />thật sự!</b></div>
+    </div>
+</section>
+
+<main class="container reviews-page">
+    <aside class="reviews-summary-card">
+        <div class="reviews-overall"><strong>@Model.Average.ToString("0.0")</strong><span class="reviews-stars">★★★★★</span><small>(@Model.Count.ToString("N0") đánh giá đã duyệt)</small></div>
+        <div class="reviews-distribution">
+            @for (var star = 5; star >= 1; star--)
+            {
+                var count = Model.RatingCounts.GetValueOrDefault(star);
+                var percent = Model.Count == 0 ? 0 : count * 100.0 / Model.Count;
+                <div class="reviews-rating-row"><span>@star <b>★</b></span><div class="reviews-rating-track"><i style="width:@(percent.ToString("0.##", System.Globalization.CultureInfo.InvariantCulture))%"></i></div><small>@percent.ToString("0")%</small></div>
+            }
+        </div>
+        <div class="reviews-food-summary">
+            <h2>Đánh giá theo món ăn</h2>
+            @if (Model.PopularFoods.Count == 0)
+            {
+                <p class="text-muted small">Chưa có đánh giá món ăn đã duyệt.</p>
+            }
+            @foreach (var food in Model.PopularFoods)
+            {
+                <a class="reviews-food-item" asp-controller="Product" asp-action="Details" asp-route-id="@food.FoodId">
+                    @if (!string.IsNullOrWhiteSpace(food.Image)) { <img src="@food.Image" alt="@food.Name" /> }
+                    else { <span class="reviews-food-placeholder">🍗</span> }
+                    <span><strong>@food.Name</strong><small><b>★ @food.Average.ToString("0.0")</b> (@food.Count đánh giá)</small></span><i>›</i>
+                </a>
+            }
+        </div>
+    </aside>
+
+    <section class="reviews-list-panel">
+        <div class="reviews-toolbar">
+            <nav class="reviews-filter" aria-label="Lọc đánh giá">
+                <a class="@(Model.Type == "all" ? "active" : "")" asp-action="Index" asp-route-type="all" asp-route-sort="@Model.Sort">☷ Tất cả</a>
+                <a class="@(Model.Type == "food" ? "active" : "")" asp-action="Index" asp-route-type="food" asp-route-sort="@Model.Sort">🍗 Món ăn</a>
+                <a class="@(Model.Type == "service" ? "active" : "")" asp-action="Index" asp-route-type="service" asp-route-sort="@Model.Sort">♧ Dịch vụ</a>
+            </nav>
+            <form asp-action="Index" method="get" class="reviews-sort-form">
+                <input type="hidden" name="type" value="@Model.Type" />
+                <select name="sort" aria-label="Sắp xếp đánh giá" onchange="this.form.submit()">
+                    <option value="newest" selected="@(Model.Sort == "newest")">Mới nhất</option>
+                    <option value="rating" selected="@(Model.Sort == "rating")">Số sao cao nhất</option>
+                </select>
+            </form>
+        </div>
+
+        @if (TempData["Message"] != null) { <div class="alert alert-info mb-3">@TempData["Message"]</div> }
+
+        @if (Model.Reviews.Count == 0)
+        {
+            <div class="reviews-empty"><span>☆</span><h2>Chưa có đánh giá ở mục này</h2><p>Đánh giá được hiển thị sau khi cửa hàng duyệt.</p></div>
+        }
+        else
+        {
+            <div class="reviews-cards">
+                @foreach (var review in Model.Reviews)
+                {
+                    var reviewerName = string.IsNullOrWhiteSpace(review.KhachHang?.HoTen) ? "Khách hàng GaRan" : review.KhachHang.HoTen;
+                    var initials = string.Concat(reviewerName.Split(' ', StringSplitOptions.RemoveEmptyEntries).Take(2).Select(x => x[..1].ToUpperInvariant()));
+                    <article class="public-review-card">
+                        <div class="public-review-avatar">@initials</div>
+                        <div class="public-review-body">
+                            <div class="public-review-head"><div><strong>@reviewerName</strong><small>@review.NgayDanhGia.ToString("dd/MM/yyyy")</small></div><span class="public-review-kind">@(review.LoaiDanhGia == "DichVu" ? "Dịch vụ" : $"Món: {review.MonAn?.TenMon ?? "Món ăn"}")</span></div>
+                            <div class="public-review-stars" aria-label="@review.SoSao trên 5">@string.Concat(Enumerable.Repeat("★", review.SoSao))<span>@string.Concat(Enumerable.Repeat("★", 5 - review.SoSao))</span></div>
+                            @if (!string.IsNullOrWhiteSpace(review.NoiDung)) { <p>@review.NoiDung</p> }
+                        </div>
+                    </article>
+                }
+            </div>
+            @if (Model.TotalPages > 1)
+            {
+                <nav class="reviews-pagination" aria-label="Trang đánh giá">
+                    @if (Model.Page > 1) { <a asp-action="Index" asp-route-type="@Model.Type" asp-route-sort="@Model.Sort" asp-route-page="@(Model.Page - 1)">‹</a> }
+                    @for (var pageNumber = 1; pageNumber <= Model.TotalPages; pageNumber++) { <a class="@(pageNumber == Model.Page ? "active" : "")" asp-action="Index" asp-route-type="@Model.Type" asp-route-sort="@Model.Sort" asp-route-page="@pageNumber">@pageNumber</a> }
+                    @if (Model.Page < Model.TotalPages) { <a asp-action="Index" asp-route-type="@Model.Type" asp-route-sort="@Model.Sort" asp-route-page="@(Model.Page + 1)">›</a> }
+                </nav>
+            }
+        }
+    </section>
+
+    <div class="reviews-write-cta"><div><strong>Bạn đã thử món nào?</strong><span>Đơn hàng hoàn thành có thể gửi đánh giá món ăn và dịch vụ.</span></div>
+        @if (User.IsInRole("KhachHang")) { <a asp-controller="Order" asp-action="Index">✎ Viết đánh giá ngay <b>→</b></a> }
+        else { <a asp-controller="Account" asp-action="Login">Đăng nhập để đánh giá <b>→</b></a> }
+    </div>
+</main>

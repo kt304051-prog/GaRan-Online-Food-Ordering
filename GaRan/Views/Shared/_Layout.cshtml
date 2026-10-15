@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - GaRan</title>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+</head>
+<body>
+    <header class="site-header">
+        <nav class="navbar navbar-expand-lg navbar-dark">
+            <div class="container">
+                <a class="navbar-brand fw-bold brand-lockup" asp-area="" asp-controller="Home" asp-action="Index"><span class="brand-mark">🍗</span><span>GaRan</span></a>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNav" aria-controls="mainNav" aria-label="Mở menu">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div id="mainNav" class="collapse navbar-collapse">
+                    <ul class="navbar-nav me-auto">
+                        <li class="nav-item"><a class="nav-link" asp-area="" asp-controller="Product" asp-action="Index">Thực đơn</a></li>
+                        <li class="nav-item"><a class="nav-link" asp-area="" asp-controller="Product" asp-action="Index" asp-route-q="Combo">Combo</a></li>
+                        <li class="nav-item"><a class="nav-link" asp-area="" asp-controller="Review" asp-action="Index">Đánh giá</a></li>
+                        <li class="nav-item"><a class="nav-link" asp-area="" asp-controller="Cart" asp-action="Index">Giỏ hàng <span id="navCartCount" class="cart-count">@await Component.InvokeAsync("CartCount")</span></a></li>
+                    </ul>
+                    <a class="nav-order-cta" asp-controller="Product" asp-action="Index">Đặt món ngay <span aria-hidden="true">→</span></a>
+                    <ul class="navbar-nav align-items-lg-center auth-nav">
+                        @if (User.Identity?.IsAuthenticated == true)
+                        {
+                            <li class="nav-item"><a class="nav-link" asp-area="" asp-controller="Order" asp-action="Index">Đơn hàng</a></li>
+                            @if (User.IsInRole("KhachHang"))
+                            {
+                                <li class="nav-item"><a class="nav-link user-name-link" asp-area="" asp-controller="Customer" asp-action="Profile">@User.Identity.Name</a></li>
+                            }
+                            <li class="nav-item"><form asp-area="" asp-controller="Account" asp-action="Logout" method="post" class="m-0"><button class="btn btn-warning btn-sm auth-btn" type="submit">Đăng xuất</button></form></li>
+                        }
+                        else
+                        {
+                            <li class="nav-item"><a class="nav-link auth-login-link" asp-area="" asp-controller="Account" asp-action="Login">Đăng nhập</a></li>
+                            <li class="nav-item"><a class="btn btn-warning btn-sm auth-btn" asp-area="" asp-controller="Account" asp-action="Register">Đăng ký</a></li>
+                        }
+                    </ul>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <main role="main">
+        @RenderBody()
+    </main>
+
+    <footer class="footer-band">
+        <div class="container footer-main">
+            <div class="footer-identity">
+                <a class="footer-brand" asp-controller="Home" asp-action="Index"><span class="footer-brand-mark">🍗</span><span>GaRan</span></a>
+                <p>Gà ngon – Niềm vui mỗi ngày!</p>
+                <div class="footer-contact">@await Component.InvokeAsync("StoreContact")</div>
+            </div>
+            <div class="footer-nav"><strong>Về GaRan</strong><a asp-controller="Home" asp-action="Index">Giới thiệu</a><a asp-controller="Product" asp-action="Index">Thực đơn</a><a asp-controller="Home" asp-action="Privacy">Liên hệ</a></div>
+            <div class="footer-nav"><strong>Hỗ trợ</strong><a asp-controller="Order" asp-action="Lookup">Tra cứu đơn hàng</a><a asp-controller="Home" asp-action="Privacy">Chính sách giao hàng</a><a asp-controller="Home" asp-action="Privacy">Điều khoản sử dụng</a></div>
+            <div class="footer-social"><strong>Kết nối với chúng tôi</strong><div class="footer-social-icons" aria-label="Mạng xã hội"> <span aria-label="Facebook">f</span><span aria-label="Instagram">◎</span><span aria-label="TikTok">♪</span><span aria-label="YouTube">▶</span></div></div>
+            <a class="footer-order-cta" asp-controller="Product" asp-action="Index"><span class="footer-cta-icon">🛵</span><span><strong>Đặt món ngay</strong><small>Giao nhanh mỗi ngày</small></span><b>›</b></a>
+        </div>
+        <div class="container footer-bottom">
+            <span>© @DateTime.Now.Year GaRan. Tất cả quyền được bảo lưu.</span>
+            <span class="footer-payments" aria-label="Phương thức thanh toán"><b>COD</b><b>VietQR</b><b>NAPAS</b><b>ZaloPay</b></span>
+        </div>
+    </footer>
+    <div id="customerToastHost" class="customer-toast-host" aria-live="polite" aria-atomic="false"></div>
+
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/js/site.js" asp-append-version="true"></script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

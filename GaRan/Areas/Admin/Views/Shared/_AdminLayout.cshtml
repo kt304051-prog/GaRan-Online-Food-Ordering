@@ -1,0 +1,151 @@
+@{
+    var controller = ViewContext.RouteData.Values["controller"]?.ToString() ?? "";
+    var action = ViewContext.RouteData.Values["action"]?.ToString() ?? "";
+    string Active(string name, string? actionName = null) =>
+        controller.Equals(name, StringComparison.OrdinalIgnoreCase) &&
+        (actionName == null || action.Equals(actionName, StringComparison.OrdinalIgnoreCase)) ? "active" : "";
+    var isAdmin = User.IsInRole("Admin");
+    var isStaff = User.IsInRole("NhanVien");
+    var homeController = isStaff ? "OrderAdmin" : "Dashboard";
+    var panelName = isStaff ? "Nhân viên" : "Admin Panel";
+    var pageKicker = isStaff ? "Khu vực xử lý đơn" : "Quản lý quán gà rán";
+    var displayName = User.Identity?.Name ?? panelName;
+}
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - GaRan @panelName</title>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+</head>
+<body class="admin-body @(isStaff ? "staff-internal" : "admin-internal")">
+    <div class="admin-layout">
+        <button class="admin-sidebar-backdrop" id="adminSidebarBackdrop" type="button" aria-label="Đóng menu"></button>
+        <aside class="admin-sidebar" id="adminSidebar">
+            <a class="admin-brand" asp-area="Admin" asp-controller="@homeController" asp-action="Index">
+                <span class="admin-brand-mark">🐔</span>
+                <span><strong>GaRan</strong><small>@panelName</small></span>
+                <span class="admin-brand-menu" aria-hidden="true">☰</span>
+            </a>
+
+            @if (isAdmin)
+            {
+                <div class="admin-nav-label">Tổng quan</div>
+                <nav class="admin-nav" aria-label="Tổng quan">
+                    <a class="@Active("Dashboard")" asp-area="Admin" asp-controller="Dashboard" asp-action="Index"><span>⌂</span>Tổng quan</a>
+                </nav>
+                <div class="admin-nav-label">Vận hành</div>
+                <nav class="admin-nav" aria-label="Vận hành">
+                    <a class="@Active("OrderAdmin")" asp-area="Admin" asp-controller="OrderAdmin" asp-action="Index" data-mark-order-notifications-read><span>▤</span>Đơn hàng</a>
+                    <a class="@Active("Delivery", "Index")" asp-area="Admin" asp-controller="Delivery" asp-action="Index"><span>♧</span>Giao hàng</a>
+                    <a class="@Active("Invoice")" asp-area="Admin" asp-controller="Invoice" asp-action="Index"><span>▧</span>Hóa đơn</a>
+                </nav>
+                <div class="admin-nav-label">Quản lý cửa hàng</div>
+                <nav class="admin-nav" aria-label="Quản lý cửa hàng">
+                    <a class="@Active("User", "Customers")" asp-area="Admin" asp-controller="User" asp-action="Customers"><span>♙</span>Khách hàng</a>
+                    <a class="@Active("Food")" asp-area="Admin" asp-controller="Food" asp-action="Index"><span>🍗</span>Món ăn</a>
+                    <a class="@Active("Category")" asp-area="Admin" asp-controller="Category" asp-action="Index"><span>▦</span>Danh mục</a>
+                    <a class="@Active("Promotion")" asp-area="Admin" asp-controller="Promotion" asp-action="Index"><span>✦</span>Khuyến mãi</a>
+                    <a class="@Active("ReviewAdmin")" asp-area="Admin" asp-controller="ReviewAdmin" asp-action="Index"><span>★</span>Đánh giá</a>
+                    <a class="@Active("User", "Index")" asp-area="Admin" asp-controller="User" asp-action="Index"><span>♧</span>Nhân viên</a>
+                    <a class="@Active("Delivery", "Settings")" asp-area="Admin" asp-controller="Delivery" asp-action="Settings"><span>⚙</span>Cấu hình giao hàng</a>
+                </nav>
+            }
+            else
+            {
+                <div class="admin-nav-label">Công việc chính</div>
+                <nav class="admin-nav" aria-label="Công việc chính">
+                    <a class="@Active("OrderAdmin")" asp-area="Admin" asp-controller="OrderAdmin" asp-action="Index" data-mark-order-notifications-read><span>▤</span>Đơn hàng</a>
+                    <a class="@Active("Delivery", "Index")" asp-area="Admin" asp-controller="Delivery" asp-action="Index"><span>♧</span>Giao hàng</a>
+                    <a class="@Active("Invoice")" asp-area="Admin" asp-controller="Invoice" asp-action="Index"><span>▧</span>Hóa đơn</a>
+                </nav>
+            }
+
+            <div class="admin-sidebar-bottom">
+                <div class="admin-sidebar-art" aria-hidden="true"><span>🍟</span><b>Good Food<br />Good Mood!</b></div>
+                <div class="admin-sidebar-status"><i></i><span>Hệ thống đang hoạt động</span></div>
+            </div>
+        </aside>
+
+        <div class="admin-main">
+            <header class="admin-topbar">
+                <div class="admin-heading-group">
+                    <button class="admin-mobile-menu-toggle" id="adminSidebarToggle" type="button" aria-label="Mở menu" aria-expanded="false">☰</button>
+                    <span class="admin-topbar-caption">@ViewData["Title"]</span>
+                </div>
+                <div class="admin-actions">
+                    @if (isAdmin || isStaff)
+                    {
+                        <div class="admin-notification-area">
+                            <button class="btn btn-outline-secondary btn-sm admin-notification-button" type="button" id="adminNotificationButton" aria-expanded="false" aria-controls="adminNotificationPanel">
+                                <span aria-hidden="true">🔔</span><span>Thông báo</span><span class="admin-notification-count" id="adminNotificationCount" hidden>0</span>
+                            </button>
+                            <section class="admin-notification-panel" id="adminNotificationPanel" aria-label="Thông báo đơn hàng" hidden>
+                                <div class="admin-notification-panel-heading"><strong>Thông báo đơn hàng</strong><button type="button" id="adminNotificationClose" class="admin-notification-panel-close" aria-label="Đóng">×</button></div>
+                                <div id="adminNotificationList" class="admin-notification-list"></div>
+                                <div class="admin-notification-panel-footer"><span id="adminNotificationStatus" aria-live="polite"></span><button type="button" class="btn btn-sm btn-outline-secondary" id="adminBrowserNotificationButton">Bật thông báo màn hình</button></div>
+                            </section>
+                        </div>
+                        <div id="adminOrderNotifications" class="admin-order-notifications" aria-live="polite" aria-atomic="false"></div>
+                    }
+                    <div class="admin-user-chip"><span class="admin-user-avatar">@(string.IsNullOrWhiteSpace(displayName) ? "G" : displayName[..1].ToUpperInvariant())</span><span><strong>@displayName</strong><small>@(isAdmin ? "Quản trị viên" : "Nhân viên")</small></span></div>
+                    <form asp-area="" asp-controller="Account" asp-action="Logout" method="post" class="m-0"><button class="btn btn-warning btn-sm admin-logout-button" type="submit">Đăng xuất</button></form>
+                </div>
+            </header>
+
+            <main class="admin-content">
+                @if (TempData["Message"] is string message && !string.IsNullOrWhiteSpace(message))
+                {
+                    <div class="alert alert-info alert-dismissible fade show" role="status">@message<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Đóng"></button></div>
+                }
+                @if (TempData["Error"] is string error && !string.IsNullOrWhiteSpace(error))
+                {
+                    <div class="alert alert-danger alert-dismissible fade show" role="alert">@error<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Đóng"></button></div>
+                }
+                @RenderBody()
+                <footer class="admin-content-footer"><span>🐔 <strong>GaRan</strong> <i></i> Hệ thống quản lý cửa hàng gà rán</span><span>🔰 Bảo mật dữ liệu · Phiên bản 1.0.0</span></footer>
+            </main>
+        </div>
+    </div>
+
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/js/site.js" asp-append-version="true"></script>
+    @if (isAdmin || isStaff)
+    {
+        <script src="~/js/admin-order-notifications.js" asp-append-version="true"
+                data-snapshot-url="@Url.Action("NotificationSnapshot", "OrderAdmin", new { area = "Admin" })"
+                data-new-orders-url="@Url.Action("NewOrders", "OrderAdmin", new { area = "Admin" })"
+                data-orders-url="@Url.Action("Index", "OrderAdmin", new { area = "Admin" })"></script>
+    }
+    <script>
+        (() => {
+            const layout = document.querySelector('.admin-layout');
+            const toggle = document.getElementById('adminSidebarToggle');
+            const backdrop = document.getElementById('adminSidebarBackdrop');
+            const close = () => { layout?.classList.remove('sidebar-open'); toggle?.setAttribute('aria-expanded', 'false'); };
+            toggle?.addEventListener('click', () => { const opened = layout?.classList.toggle('sidebar-open'); toggle.setAttribute('aria-expanded', String(!!opened)); });
+            backdrop?.addEventListener('click', close);
+            document.querySelectorAll('.admin-nav a').forEach(link => link.addEventListener('click', close));
+            const runSearch = () => {
+                const terms = [...document.querySelectorAll('.admin-local-search')].map(input => input?.value.trim().toLocaleLowerCase()).filter(Boolean);
+                const from = document.getElementById('staffDateFrom')?.value || '';
+                const to = document.getElementById('staffDateTo')?.value || '';
+                document.querySelectorAll('[data-admin-search-row]').forEach(row => {
+                    const matchesTerms = terms.every(term => row.textContent.toLocaleLowerCase().includes(term));
+                    const matchesFilters = [...document.querySelectorAll('[data-admin-filter]')].every(filter => !filter.value || row.dataset[filter.dataset.adminFilter] === filter.value);
+                    const created = row.dataset.created || '';
+                    const matchesDate = (!from || created >= from) && (!to || created <= to);
+                    row.hidden = !(matchesTerms && matchesFilters && matchesDate);
+                });
+            };
+            document.querySelectorAll('.admin-local-search, [data-admin-filter]').forEach(control => control.addEventListener('input', runSearch));
+            document.querySelectorAll('[data-admin-filter]').forEach(control => control.addEventListener('change', runSearch));
+            ['staffDateFrom', 'staffDateTo'].forEach(id => document.getElementById(id)?.addEventListener('change', runSearch));
+        })();
+    </script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

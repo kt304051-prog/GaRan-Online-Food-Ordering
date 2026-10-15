@@ -1,0 +1,225 @@
+@model CheckoutVM
+@{
+    ViewData["Title"] = "Thanh toán";
+    var enableCod = ViewBag.AllowCOD is not bool cod || cod;
+    var enableVietQr = ViewBag.AllowVietQR is not bool vietQr || vietQr;
+}
+<div class="container section-pad checkout-page">
+    <div class="checkout-progress" aria-label="Các bước đặt hàng">
+        <div class="checkout-progress-step active"><b>1</b><span>Giao hàng</span></div><i class="checkout-progress-line"></i>
+        <div class="checkout-progress-step active"><b>2</b><span>Thanh toán</span></div><i class="checkout-progress-line"></i>
+        <div class="checkout-progress-step"><b>3</b><span>Hoàn tất</span></div>
+    </div>
+    <div class="checkout-heading mb-4">
+        <span class="text-brand fw-bold text-uppercase small">GaRan · Đặt món trực tuyến</span>
+        <h1 class="fw-bold mb-1">Thanh toán</h1>
+    </div>
+    <form asp-controller="Cart" asp-action="Checkout" method="post" class="row g-4 align-items-start" id="checkoutForm" data-estimate-url="@Url.Action("EstimateDelivery", "Cart")" data-coupon-url="@Url.Action("CheckCoupon", "Cart")" data-base="@Model.Cart.TongTien.ToString(System.Globalization.CultureInfo.InvariantCulture)" data-discount="@Model.GiamGia.ToString(System.Globalization.CultureInfo.InvariantCulture)" data-shipping-fee="@Model.PhiGiaoHang.ToString(System.Globalization.CultureInfo.InvariantCulture)" data-vip-rate="@Model.PhanTramGiamThanhVien.ToString(System.Globalization.CultureInfo.InvariantCulture)" data-loyalty-points="@Model.DiemHienCo" data-tax-rate="@((Model.TyLeThue / 100m).ToString(System.Globalization.CultureInfo.InvariantCulture))">
+        <input asp-for="QuoteDistanceKm" type="hidden" />
+        <input asp-for="QuoteTotal" type="hidden" />
+        <input asp-for="QuoteAddress" type="hidden" />
+        <div class="col-lg-7">
+            <section class="food-card p-4 h-auto checkout-panel mb-4">
+                <div class="checkout-section-title"><span class="checkout-step">1</span><div><h4 class="fw-bold mb-1">Thông tin khách hàng</h4></div></div>
+                <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+                <div class="row g-3">
+                    <div class="col-md-6"><label asp-for="HoTen" class="form-label">Họ và tên</label><input asp-for="HoTen" class="form-control" autocomplete="name" required /><span asp-validation-for="HoTen" class="text-danger small"></span></div>
+                    <div class="col-md-6"><label asp-for="SoDienThoaiNhan" class="form-label">Số điện thoại</label><input asp-for="SoDienThoaiNhan" class="form-control" type="tel" inputmode="numeric" autocomplete="tel" required /><span asp-validation-for="SoDienThoaiNhan" class="text-danger small"></span></div>
+                    <div class="col-12"><label asp-for="Email" class="form-label">Email</label><input asp-for="Email" class="form-control" type="email" autocomplete="email" required /><span asp-validation-for="Email" class="text-danger small"></span></div>
+                </div>
+            </section>
+            <section class="food-card p-4 h-auto checkout-panel mb-4">
+                <div class="checkout-section-title"><span class="checkout-step">2</span><div><h4 class="fw-bold mb-1">Địa chỉ giao hàng</h4></div></div>
+                <div class="row g-3">
+                    <div class="col-md-5"><label asp-for="TinhThanh" class="form-label">Tỉnh/Thành phố</label><select asp-for="TinhThanh" class="form-select" aria-label="Tỉnh hoặc thành phố"><option value="Thành phố Hồ Chí Minh">Thành phố Hồ Chí Minh</option></select><span asp-validation-for="TinhThanh" class="text-danger small"></span></div>
+                    <div class="col-md-7"><label asp-for="PhuongXa" class="form-label">Phường/Xã</label><select asp-for="PhuongXa" class="form-select" data-wards-url="@Url.Content("~/data/hcm-wards.json")" data-selected="@Model.PhuongXa" disabled required><option value="">Đang tải danh sách phường/xã...</option></select><span asp-validation-for="PhuongXa" class="text-danger small"></span></div>
+                    <div class="col-12"><label asp-for="DiaChiChiTiet" class="form-label">Số nhà, tên đường</label><input asp-for="DiaChiChiTiet" class="form-control" autocomplete="street-address" maxlength="150" /><span asp-validation-for="DiaChiChiTiet" class="text-danger small"></span></div>
+                </div>
+            </section>
+            <section class="food-card p-4 h-auto checkout-panel">
+                <div class="checkout-section-title"><span class="checkout-step">3</span><div><h4 class="fw-bold mb-1">Thanh toán</h4></div></div>
+                <div class="payment-method-list">
+                    @if (enableCod)
+                    {
+                        <label class="payment-method" for="payCod"><input class="form-check-input" type="radio" asp-for="PhuongThucThanhToan" value="COD" id="payCod" /><span><strong>Thanh toán khi nhận hàng</strong></span></label>
+                    }
+                    @if (enableVietQr)
+                    {
+                        <label class="payment-method" for="payQr"><input class="form-check-input" type="radio" asp-for="PhuongThucThanhToan" value="QR" id="payQr" /><span><strong>Quét mã QR</strong></span></label>
+                        <label class="payment-method" for="payBank"><input class="form-check-input" type="radio" asp-for="PhuongThucThanhToan" value="Bank" id="payBank" /><span><strong>Chuyển khoản ngân hàng</strong></span></label>
+                    }
+                </div>
+                <span asp-validation-for="PhuongThucThanhToan" class="text-danger small"></span>
+                <div class="row g-3 mt-1">
+                    <div class="col-12"><label asp-for="MaKhuyenMai" class="form-label">Mã khuyến mãi</label><div class="input-group"><input asp-for="MaKhuyenMai" class="form-control" autocomplete="off" /><button type="button" class="btn btn-outline-danger" id="applyCheckoutCoupon">Áp dụng</button></div><span asp-validation-for="MaKhuyenMai" class="text-danger small"></span><div id="checkoutCouponMessage" class="small mt-1" aria-live="polite"></div></div>
+                </div>
+                @if (Model.DiemHienCo > 0)
+                {
+                    <div class="loyalty-redeem mt-3">
+                        <label class="form-check d-flex align-items-start gap-2 mb-0" for="SuDungDiem">
+                            <input asp-for="SuDungDiem" class="form-check-input mt-1" id="SuDungDiem" />
+                            <span><strong>Dùng điểm tích lũy</strong></span>
+                        </label>
+                    </div>
+                }
+            </section>
+        </div>
+        <aside class="col-lg-5">
+            <section class="food-card p-4 h-auto checkout-summary">
+                <h4 class="fw-bold mb-3">Đơn hàng của bạn</h4>
+                <div class="checkout-items">
+                    @for (var i = 0; i < Model.Cart.Items.Count; i++)
+                    {
+                        var item = Model.Cart.Items[i];
+                        <div class="checkout-item"><span><img class="checkout-item-thumb" src="@(string.IsNullOrWhiteSpace(item.HinhAnh) ? "https://images.unsplash.com/photo-1562967916-eb82221dfb36?auto=format&fit=crop&w=160&q=80" : item.HinhAnh)" alt="" />@item.TenMon <small class="text-muted">× @item.SoLuong</small></span><strong>@item.ThanhTien.ToString("N0") đ</strong></div>
+                    }
+                </div>
+                <div class="mt-3">
+                    <label asp-for="GhiChu" class="form-label">Ghi chú đơn hàng</label>
+                    <textarea asp-for="GhiChu" maxlength="500" rows="3" class="form-control"></textarea>
+                    <span asp-validation-for="GhiChu" class="text-danger small"></span>
+                </div>
+                <div class="checkout-totals pt-3 mt-3">
+                    <div class="d-flex justify-content-between"><span>Tiền hàng</span><span id="checkoutSubtotal">@Model.Cart.TongTien.ToString("N0") đ</span></div>
+                    <div id="checkoutCouponDiscountRow" class="d-flex justify-content-between text-success" style="@(Model.GiamGia > 0 ? "" : "display:none")"><span>Giảm giá</span><span id="checkoutCouponDiscount">-@Model.GiamGia.ToString("N0") đ</span></div>
+                    @if (Model.PhanTramGiamThanhVien > 0) { <div id="checkoutMemberDiscountRow" class="d-flex justify-content-between text-success"><span>Ưu đãi VIP (@Model.PhanTramGiamThanhVien.ToString("0.#")%)</span><span id="checkoutMemberDiscount">-@Model.GiamGiaThanhVien.ToString("N0") đ</span></div> }
+                    @if (Model.DiemHienCo > 0) { <div id="checkoutLoyaltyRow" class="d-flex justify-content-between text-success" style="display:@(Model.GiamGiaDiem > 0 ? "flex" : "none")"><span>Giảm bằng điểm (@Model.DiemSuDung điểm)</span><span id="checkoutLoyaltyDiscount">-@Model.GiamGiaDiem.ToString("N0") đ</span></div> }
+                    <div class="d-flex justify-content-between"><span>Thuế VAT (@Model.TyLeThue.ToString("0.##")%)</span><span id="checkoutTax">@Model.TienThue.ToString("N0") đ</span></div>
+                    <div class="d-flex justify-content-between"><span>Phí giao hàng</span><span id="checkoutShipping">@Model.PhiGiaoHang.ToString("N0") đ</span></div>
+                    <div class="d-flex justify-content-between mt-2"><span>Khoảng cách</span><span id="checkoutDistance">@(Model.DaTinhPhiGiaoHang ? $"{Model.KhoangCachKm:0.00} km" : "Chọn phường/xã để tính")</span></div>
+                    <div class="checkout-grand-total d-flex justify-content-between align-items-center mt-3 pt-3"><strong>Tổng thanh toán</strong><strong id="checkoutTotal" class="price fs-5">@Model.ThanhToan.ToString("N0") đ</strong></div>
+                </div>
+                <div id="deliveryEstimateMessage" class="small text-danger mt-3 mb-2" aria-live="polite"></div>
+                <button class="btn btn-primary btn-lg w-100 mt-3" type="submit" name="confirmOrder" value="true" id="confirmOrderButton">Xác nhận đặt hàng</button>
+            </section>
+        </aside>
+    </form>
+</div>
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        (() => {
+            const form = document.getElementById('checkoutForm');
+            const addressIds = ['TinhThanh', 'PhuongXa', 'DiaChiChiTiet'];
+            const formatMoney = amount => new Intl.NumberFormat('vi-VN').format(Math.round(amount)) + ' đ';
+            const valueOf = id => document.getElementById(id)?.value?.trim() || '';
+            let timer;
+            let request;
+            const recalculateTotals = shippingFee => {
+                const subtotal = Number(form.dataset.base) || 0;
+                const couponDiscount = Number(form.dataset.discount) || 0;
+                const eligibleSubtotal = Math.max(0, subtotal - couponDiscount);
+                const vipDiscount = Math.round(eligibleSubtotal * (Number(form.dataset.vipRate) || 0) / 100);
+                const usePoints = document.getElementById('SuDungDiem')?.checked === true;
+                const pointsAvailable = Number(form.dataset.loyaltyPoints) || 0;
+                const pointsToUse = usePoints ? Math.min(pointsAvailable, Math.floor(Math.max(0, eligibleSubtotal - vipDiscount) / 100)) : 0;
+                const pointsDiscount = pointsToUse * 100;
+                const taxableAmount = Math.max(0, eligibleSubtotal - vipDiscount - pointsDiscount);
+                const tax = Math.round(taxableAmount * (Number(form.dataset.taxRate) || 0));
+                const fee = Number(shippingFee ?? form.dataset.shippingFee) || 0;
+                const total = taxableAmount + tax + fee;
+
+                form.dataset.shippingFee = String(fee);
+                document.getElementById('checkoutSubtotal').textContent = formatMoney(subtotal);
+                const couponRow = document.getElementById('checkoutCouponDiscountRow');
+                couponRow.style.display = couponDiscount > 0 ? 'flex' : 'none';
+                document.getElementById('checkoutCouponDiscount').textContent = '-' + formatMoney(couponDiscount);
+                document.getElementById('checkoutTax').textContent = formatMoney(tax);
+                document.getElementById('checkoutShipping').textContent = formatMoney(fee);
+                document.getElementById('checkoutTotal').textContent = formatMoney(total);
+                const loyaltyLine = document.getElementById('checkoutLoyaltyDiscount');
+                if (loyaltyLine) loyaltyLine.textContent = '-' + formatMoney(pointsDiscount);
+                const vipLine = document.getElementById('checkoutMemberDiscount');
+                if (vipLine) vipLine.textContent = '-' + formatMoney(vipDiscount);
+                const loyaltyRow = document.getElementById('checkoutLoyaltyRow');
+                if (loyaltyRow) {
+                    loyaltyRow.style.display = pointsDiscount > 0 ? 'flex' : 'none';
+                    loyaltyRow.querySelector('span').textContent = 'Giảm bằng điểm (' + pointsToUse + ' điểm)';
+                }
+                return total;
+            };
+            const wardSelect = document.getElementById('PhuongXa');
+            fetch(wardSelect.dataset.wardsUrl)
+                .then(response => { if (!response.ok) throw new Error('ward list unavailable'); return response.json(); })
+                .then(wards => {
+                    const selectedWard = wardSelect.dataset.selected;
+                    wardSelect.replaceChildren(new Option('Chọn phường/xã', ''));
+                    for (const ward of wards) wardSelect.add(new Option(ward.name, ward.name));
+                    if (selectedWard && wards.some(ward => ward.name === selectedWard)) wardSelect.value = selectedWard;
+                    wardSelect.disabled = false;
+                })
+                .catch(() => { wardSelect.replaceChildren(new Option('Không tải được danh sách. Vui lòng tải lại trang.', '')); });
+            const estimate = async () => {
+                const fields = ['TinhThanh', 'PhuongXa'].map(id => document.getElementById(id));
+                if (fields.some(field => !field || !field.value.trim())) return false;
+                request?.abort();
+                request = new AbortController();
+                const data = new FormData(form);
+                try {
+                    const response = await fetch(form.dataset.estimateUrl, { method: 'POST', body: data, signal: request.signal, headers: { 'X-Requested-With': 'XMLHttpRequest' } });
+                    const quote = await response.json();
+                    const message = document.getElementById('deliveryEstimateMessage');
+                    if (message) message.textContent = quote.message || '';
+                    if (!quote.success) {
+                        if (quote.distanceKm != null) document.getElementById('checkoutDistance').textContent = quote.distanceKm.toFixed(2) + ' km';
+                        if (quote.distanceKm != null) {
+                            document.getElementById('checkoutShipping').textContent = 'Không hỗ trợ';
+                            document.getElementById('checkoutTotal').textContent = '—';
+                        }
+                        return false;
+                    }
+                    document.getElementById('checkoutDistance').textContent = quote.distanceKm.toFixed(2) + ' km';
+                    const total = recalculateTotals(quote.shippingFee);
+                    document.getElementById('QuoteDistanceKm').value = quote.distanceKm;
+                    document.getElementById('QuoteTotal').value = total;
+                    document.getElementById('QuoteAddress').value = [valueOf('DiaChiChiTiet'), valueOf('PhuongXa'), valueOf('TinhThanh'), 'Việt Nam'].filter(Boolean).join(', ');
+                    return true;
+                } catch (error) {
+                    if (error.name !== 'AbortError') {
+                        const message = document.getElementById('deliveryEstimateMessage');
+                        if (message) message.textContent = 'Chưa tính được phí giao hàng. Bạn có thể thử lại.';
+                    }
+                    return false;
+                }
+            };
+            for (const id of addressIds) {
+                const field = document.getElementById(id);
+                field?.addEventListener('blur', () => { clearTimeout(timer); timer = setTimeout(estimate, 500); });
+                field?.addEventListener('change', () => { clearTimeout(timer); timer = setTimeout(estimate, 300); });
+            }
+            document.getElementById('SuDungDiem')?.addEventListener('change', () => recalculateTotals());
+            const couponInput = document.getElementById('MaKhuyenMai');
+            const couponButton = document.getElementById('applyCheckoutCoupon');
+            couponInput?.addEventListener('input', () => {
+                form.dataset.discount = '0';
+                const message = document.getElementById('checkoutCouponMessage');
+                message.textContent = '';
+                message.classList.remove('text-success', 'text-danger');
+                recalculateTotals();
+            });
+            couponInput?.addEventListener('keydown', event => {
+                if (event.key === 'Enter') { event.preventDefault(); couponButton?.click(); }
+            });
+            couponButton?.addEventListener('click', async event => {
+                const button = event.currentTarget;
+                const message = document.getElementById('checkoutCouponMessage');
+                button.disabled = true;
+                message.textContent = '';
+                try {
+                    const response = await fetch(form.dataset.couponUrl, { method: 'POST', body: new FormData(form), headers: { 'X-Requested-With': 'XMLHttpRequest' } });
+                    const result = await response.json();
+                    if (!response.ok) throw new Error(result.message || 'Không thể kiểm tra mã ưu đãi.');
+                    form.dataset.discount = result.success ? String(result.discount) : '0';
+                    if (result.success) couponInput.value = result.code;
+                    message.textContent = result.message;
+                    message.classList.toggle('text-success', result.success);
+                    message.classList.toggle('text-danger', !result.success);
+                    recalculateTotals();
+                } catch (error) {
+                    message.textContent = error.message || 'Không thể kiểm tra mã ưu đãi.';
+                    message.classList.add('text-danger');
+                } finally { button.disabled = false; }
+            });
+        })();
+    </script>
+}

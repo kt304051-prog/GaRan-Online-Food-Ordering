@@ -1,0 +1,45 @@
+@model CartVM
+@{
+    ViewData["Title"] = "Giỏ hàng";
+}
+
+<div class="container section-pad cart-page">
+    <nav class="breadcrumbs"><a asp-controller="Home" asp-action="Index">Trang chủ</a><span>›</span><span>Giỏ hàng</span></nav>
+    <div class="section-heading-row cart-heading"><div><span class="section-kicker">Sẵn sàng cho bữa ngon</span><h1>Giỏ hàng của bạn</h1><p>Kiểm tra món ăn trước khi chuyển sang thanh toán.</p></div><a asp-controller="Product" asp-action="Index" class="continue-shopping">← Tiếp tục mua sắm</a></div>
+
+    <div class="cart-layout" id="cartLayout" style="@(Model.Items.Any() ? "" : "display:none")">
+        <section class="cart-items-panel">
+            <div class="cart-table-heading"><span>Sản phẩm</span><span>Đơn giá</span><span>Số lượng</span><span>Thành tiền</span><span></span></div>
+            @foreach (var item in Model.Items)
+            {
+                <article class="cart-line" data-cart-row data-price="@item.DonGia.ToString(System.Globalization.CultureInfo.InvariantCulture)" data-item-id="@item.MonAnID">
+                    <div class="cart-product-info">
+                        <img src="@(string.IsNullOrWhiteSpace(item.HinhAnh) ? "https://images.unsplash.com/photo-1562967916-eb82221dfb36?auto=format&fit=crop&w=240&q=80" : item.HinhAnh)" alt="@item.TenMon" />
+                        <div><a asp-controller="Product" asp-action="Details" asp-route-id="@item.MonAnID"><strong>@item.TenMon</strong></a></div>
+                    </div>
+                    <div class="cart-unit-price">@item.DonGia.ToString("N0") đ</div>
+                    <form asp-action="Update" method="post" class="cart-quantity-form">
+                        <input type="hidden" name="id" value="@item.MonAnID" />
+                        <button type="button" class="quantity-stepper" data-cart-delta="-1" aria-label="Giảm số lượng">−</button>
+                        <input name="quantity" value="@item.SoLuong" type="number" min="1" max="100" class="cart-quantity-input" aria-label="Số lượng @item.TenMon" />
+                        <button type="button" class="quantity-stepper" data-cart-delta="1" aria-label="Tăng số lượng">+</button>
+                    </form>
+                    <strong class="cart-line-total">@item.ThanhTien.ToString("N0") đ</strong>
+                    <form asp-action="Remove" method="post" class="cart-remove-form">
+                        <input type="hidden" name="id" value="@item.MonAnID" />
+                        <button class="cart-remove-btn" type="submit" aria-label="Xóa @item.TenMon">×</button>
+                    </form>
+                </article>
+            }
+        </section>
+        <aside class="cart-summary-card">
+            <h2>Tóm tắt đơn hàng</h2>
+            <div class="cart-summary-row"><span>Tạm tính (@Model.TongSoLuong món)</span><strong id="cartSubtotal">@Model.TongTien.ToString("N0") đ</strong></div>
+            <div class="cart-summary-grand"><span>Tạm tính</span><strong id="cartGrandTotal">@Model.TongTien.ToString("N0") đ</strong></div>
+            <a class="btn cart-checkout-btn" asp-action="Checkout">Tiếp tục đặt hàng <span>→</span></a>
+        </aside>
+    </div>
+    <div class="cart-empty-state" id="cartEmptyState" style="@(Model.Items.Any() ? "display:none" : "")">
+        <div class="cart-empty-icon">🛒</div><h2>Giỏ hàng đang trống</h2><p>Chọn vài món thật ngon để bắt đầu đơn hàng của bạn.</p><a class="btn cart-checkout-btn" asp-controller="Product" asp-action="Index">Khám phá thực đơn</a>
+    </div>
+</div>

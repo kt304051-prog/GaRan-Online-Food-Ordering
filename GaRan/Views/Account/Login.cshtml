@@ -1,0 +1,34 @@
+@model LoginVM
+@{
+    ViewData["Title"] = "Đăng nhập";
+}
+
+<div class="login-experience">
+    <div class="login-welcome">
+        <div class="login-welcome-copy">
+            <span class="login-eyebrow">Chào mừng bạn đến với</span>
+            <h1>GaRan</h1>
+            <p>Đăng nhập để thưởng thức những món gà rán thơm ngon và nhận ưu đãi dành riêng cho bạn.</p>
+            <div class="login-perks"><span><b>ϟ</b> Đặt món nhanh chóng</span><span><b>♧</b> Thanh toán an toàn</span><span><b>✦</b> Ưu đãi hấp dẫn</span></div>
+        </div>
+        <div class="login-chicken-art" aria-hidden="true"><div class="login-food-glow"></div><span>🍗</span><i>Gà ngon<br />vị thật<br />GaRan!</i></div>
+    </div>
+    <section class="login-card">
+        <div class="login-card-brand"><span>🍗</span> GaRan <small>Khách hàng</small></div>
+        <h2>Đăng nhập</h2>
+        <p class="login-card-intro">Vui lòng nhập thông tin để tiếp tục</p>
+        @if (TempData["Message"] != null) { <div class="alert alert-success">@TempData["Message"]</div> }
+        <form asp-action="Login" method="post">
+            <div asp-validation-summary="ModelOnly" class="text-danger small mb-3"></div>
+            <div class="mb-3"><label asp-for="UsernameOrEmail" class="form-label">Email</label><div class="login-input-wrap"><span>✉</span><input asp-for="UsernameOrEmail" class="form-control" autocomplete="email" /></div><span asp-validation-for="UsernameOrEmail" class="text-danger"></span></div>
+            <div class="mb-2"><label asp-for="Password" class="form-label">Mật khẩu</label><div class="login-input-wrap"><span>♙</span><input asp-for="Password" class="form-control" placeholder="Nhập mật khẩu" autocomplete="current-password" /></div><span asp-validation-for="Password" class="text-danger"></span></div>
+            <div class="login-forgot-row"><a asp-action="ForgotPassword">Quên mật khẩu?</a></div>
+            <button class="login-submit" type="submit"><span>→</span> Đăng nhập</button>
+        </form>
+        <p class="login-register">Chưa có tài khoản? <a asp-action="Register">Đăng ký ngay</a></p>
+    </section>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

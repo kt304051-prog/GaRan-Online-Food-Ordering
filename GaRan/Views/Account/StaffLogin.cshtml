@@ -1,0 +1,17 @@
+@{
+    ViewData["Title"] = "Cổng nội bộ GaRan";
+    Layout = "_InternalLayout";
+}
+
+<main class="internal-auth-shell portal-choice-shell">
+    <section class="portal-choice-card">
+        <div class="portal-choice-brand"><span>🐔</span><strong>GaRan</strong><small>Cổng vận hành nội bộ</small></div>
+        <h1>Chọn khu vực đăng nhập</h1>
+        <p>Vui lòng chọn đúng vai trò để tiếp tục vào hệ thống.</p>
+        <div class="portal-choice-grid">
+            <a asp-action="AdminLogin" class="portal-choice-option portal-choice-admin"><span class="portal-choice-icon">🛡</span><strong>Quản trị viên</strong><small>Dashboard, thực đơn, khách hàng, nhân viên và báo cáo</small><b>Đăng nhập Admin <i>→</i></b></a>
+            <a asp-action="EmployeeLogin" class="portal-choice-option portal-choice-employee"><span class="portal-choice-icon">♙</span><strong>Nhân viên</strong><small>Tiếp nhận đơn, giao hàng và tra cứu hóa đơn</small><b>Đăng nhập nhân viên <i>→</i></b></a>
+        </div>
+        <div class="portal-choice-support">Cần hỗ trợ? @await Component.InvokeAsync("StoreContact")</div>
+    </section>
+</main>

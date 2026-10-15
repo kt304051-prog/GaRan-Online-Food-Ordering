@@ -1,0 +1,39 @@
+# .NET build output
+**/bin/
+**/obj/
+**/TestResults/
+**/artifacts/
+
+# IDE and local user state
+.vs/
+.idea/
+**/*.csproj.user
+*.suo
+
+# Machine-specific configuration and secrets
+GaRan/appsettings.json
+GaRan/appsettings.*.json
+!GaRan/appsettings.example.json
+**/secrets.json
+.env
+.env.*
+!.env.example
+
+# Local databases, logs, packages, and archives
+*.mdf
+*.ldf
+*.db
+*.sqlite
+*.log
+*.zip
+*.rar
+*.7z
+*.bak
+
+# OS files
+Thumbs.db
+.DS_Store
+
+# Personal graduation report and team test guide (kept locally, not published)
+/BAO_CAO_TONG_HOP_SOURCE_GARAN.md
+/HUONG_DAN_TEST_NHOM.md

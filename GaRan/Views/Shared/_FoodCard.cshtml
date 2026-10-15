@@ -1,0 +1,40 @@
+@model MonAn
+@{
+    var highlightedFoodIds = ViewBag.HighlightedFoodIds as List<int> ?? new();
+    var categoryName = Model.DanhMuc?.TenDanhMuc ?? string.Empty;
+    var isDrink = categoryName.Contains("Nước uống", StringComparison.OrdinalIgnoreCase);
+    var showTag = (Model.NoiBat || highlightedFoodIds.Contains(Model.MonAnID)) && !isDrink;
+    var ratings = ViewBag.ProductRatings as Dictionary<int, GaRan.ViewModels.FoodRatingSummaryVM> ?? new();
+    ratings.TryGetValue(Model.MonAnID, out var rating);
+}
+<div class="col-6 col-md-4 col-xl-3 food-grid-col">
+    <article class="food-card menu-card menu-card-modern">
+        <div class="food-media">
+            <a class="food-image-link" asp-controller="Product" asp-action="Details" asp-route-id="@Model.MonAnID" tabindex="-1" aria-hidden="true">
+                <img src="@(string.IsNullOrWhiteSpace(Model.HinhAnh) ? "https://images.unsplash.com/photo-1562967916-eb82221dfb36?auto=format&fit=crop&w=800&q=80" : Model.HinhAnh)" alt="@Model.TenMon" loading="lazy" />
+            </a>
+            @if (showTag) { <span class="food-tag">★ Bán chạy</span> }
+            <button type="button" class="food-favorite" data-favorite="@Model.MonAnID" aria-label="Lưu món yêu thích" aria-pressed="false">♡</button>
+        </div>
+        <div class="food-card-body">
+            <span class="food-category-label">@Model.DanhMuc?.TenDanhMuc</span>
+            <h3><a asp-controller="Product" asp-action="Details" asp-route-id="@Model.MonAnID">@Model.TenMon</a></h3>
+            @if (rating?.Count > 0)
+            {
+                <div class="food-rating" aria-label="Đánh giá @rating.Average.ToString("0.0") trên 5 từ @rating.Count lượt"><span>★★★★★</span><strong>@rating.Average.ToString("0.0")</strong><small>(@rating.Count)</small></div>
+            }
+            else
+            {
+                <div class="food-rating food-rating-new"><span>☆☆☆☆☆</span><small>Chưa có đánh giá</small></div>
+            }
+            <p class="food-desc">@Model.MoTa</p>
+            <div class="food-card-bottom">
+                <span class="price">@Model.Gia.ToString("N0")<small>đ</small></span>
+                <form asp-controller="Cart" asp-action="Add" method="post" class="add-to-cart-form">
+                    <input type="hidden" name="id" value="@Model.MonAnID" />
+                    <button class="btn add-to-cart-btn" type="submit"><span>🛒</span><span>Thêm</span></button>
+                </form>
+            </div>
+        </div>
+    </article>
+</div>

@@ -1,0 +1,48 @@
+@model List<MonAn>
+@{
+    ViewData["Title"] = "Thực đơn GaRan";
+    var categories = ViewBag.Categories as List<DanhMuc> ?? new();
+}
+
+<div class="menu-page-hero">
+    <div class="container menu-page-hero-inner"><div><span class="section-kicker">Gà rán giòn rụm · Giao tận nơi</span><h1>Thực đơn GaRan</h1><p>Chọn món yêu thích, thêm vào giỏ và thưởng thức ngay.</p></div><div class="menu-hero-emblem">🍗<small>Nóng giòn<br />mỗi ngày</small></div></div>
+</div>
+<div class="container section-pad menu-page">
+    <div class="menu-toolbar">
+        <form class="menu-search-form" asp-controller="Product" asp-action="Index" method="get">
+            <label for="menuQuery">Tìm món bạn yêu thích</label>
+            <div class="menu-search-control"><span aria-hidden="true">⌕</span><input id="menuQuery" name="q" value="@ViewBag.Query" class="form-control" placeholder="Tìm tên món ăn..." /><button class="btn" type="submit">Tìm món</button></div>
+        </form>
+        <div class="menu-benefits"><span>🍗 Gà giòn nóng</span><span>🛵 Giao tận nơi</span><span>⭐ Tích điểm thành viên</span></div>
+    </div>
+    <div class="menu-categories-row"><strong>Danh mục</strong><div class="category-pills menu-category-pills">
+        <a class="category-pill @((ViewBag.CategoryId == null) ? "active" : "")" asp-controller="Product" asp-action="Index" asp-route-q="@ViewBag.Query">✦ <span>Tất cả</span></a>
+        @foreach (var category in categories)
+        {
+            <a class="category-pill @((ViewBag.CategoryId == category.DanhMucID) ? "active" : "")" asp-controller="Product" asp-action="Index" asp-route-categoryId="@category.DanhMucID" asp-route-q="@ViewBag.Query"><span>@category.TenDanhMuc</span></a>
+        }
+    </div></div>
+    <div class="menu-result-heading"><div><h2>@(ViewBag.CategoryId == null ? "Món ngon dành cho bạn" : categories.FirstOrDefault(x => x.DanhMucID == (int)ViewBag.CategoryId)?.TenDanhMuc)</h2><span>@Model.Count món trong trang này</span></div><a asp-controller="Cart" asp-action="Index" class="continue-shopping">Xem giỏ hàng <span id="menuCartCount">(@await Component.InvokeAsync("CartCount"))</span></a></div>
+    @if (!Model.Any())
+    {
+        <div class="cart-empty-state"><div class="cart-empty-icon">🍽️</div><h2>Chưa tìm thấy món phù hợp</h2><p>Thử đổi từ khóa hoặc chọn danh mục khác nhé.</p><a class="btn cart-checkout-btn" asp-action="Index">Xóa bộ lọc</a></div>
+    }
+    else
+    {
+        <div class="row g-3 g-lg-4 home-product-grid menu-results-grid">
+            @foreach (var item in Model)
+            {
+                <partial name="_FoodCard" model="item" />
+            }
+        </div>
+        @if ((int)ViewBag.TotalPages > 1)
+        {
+            <nav class="mt-5" aria-label="Phân trang thực đơn"><ul class="pagination menu-pagination">
+                @for (var i = 1; i <= (int)ViewBag.TotalPages; i++)
+                {
+                    <li class="page-item @(i == (int)ViewBag.Page ? "active" : "")"><a class="page-link" asp-route-page="@i" asp-route-q="@ViewBag.Query" asp-route-categoryId="@ViewBag.CategoryId">@i</a></li>
+                }
+            </ul></nav>
+        }
+    }
+</div>
