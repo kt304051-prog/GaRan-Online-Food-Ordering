@@ -1,2 +1,17 @@
 @model GaRan.ViewComponents.StoreContactVM
-<span>Hotline: @Model.Phone &bull; Email: <a href="mailto:@Model.Email">@Model.Email</a></span>
+@if (Model.Part == "phone")
+{
+    <span>Hotline: @Model.Phone</span>
+}
+else if (Model.Part == "email-icon")
+{
+    <a href="https://mail.google.com/mail/?view=cm&amp;fs=1&amp;to=@Uri.EscapeDataString(Model.Email)" target="_blank" rel="noopener noreferrer" aria-label="Soạn email cho GaRan bằng Gmail">✉</a>
+}
+else if (Model.Part == "email")
+{
+    <a href="mailto:@Model.Email">@Model.Email</a>
+}
+else
+{
+    <span>Hotline: @Model.Phone &bull; Email: <a href="mailto:@Model.Email">@Model.Email</a></span>
+}

@@ -15,7 +15,7 @@ public sealed class StoreContactViewComponent : ViewComponent
         _configuration = configuration;
     }
 
-    public async Task<IViewComponentResult> InvokeAsync()
+    public async Task<IViewComponentResult> InvokeAsync(string part = "all")
     {
         var settings = await _context.CauHinhGiaoHangs
             .AsNoTracking()
@@ -26,11 +26,11 @@ public sealed class StoreContactViewComponent : ViewComponent
         var email = FirstValue(settings?.EmailCuaHang, _configuration["Store:Email"], "cskh@garan.vn");
         var phone = FirstValue(settings?.DienThoaiCuaHang, _configuration["Store:Phone"], "1900 6868");
 
-        return View("Default", new StoreContactVM(email, phone));
+        return View("Default", new StoreContactVM(email, phone, part));
     }
 
     private static string FirstValue(params string?[] values) =>
         values.FirstOrDefault(value => !string.IsNullOrWhiteSpace(value))!.Trim();
 }
 
-public sealed record StoreContactVM(string Email, string Phone);
+public sealed record StoreContactVM(string Email, string Phone, string Part);

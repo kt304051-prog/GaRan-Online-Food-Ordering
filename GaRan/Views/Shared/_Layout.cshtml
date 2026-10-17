@@ -53,16 +53,25 @@
             <div class="footer-identity">
                 <a class="footer-brand" asp-controller="Home" asp-action="Index"><span class="footer-brand-mark">🍗</span><span>GaRan</span></a>
                 <p>Gà ngon – Niềm vui mỗi ngày!</p>
-                <div class="footer-contact">@await Component.InvokeAsync("StoreContact")</div>
+                <div class="footer-contact">@await Component.InvokeAsync("StoreContact", new { part = "phone" })</div>
             </div>
             <div class="footer-nav"><strong>Về GaRan</strong><a asp-controller="Home" asp-action="Index">Giới thiệu</a><a asp-controller="Product" asp-action="Index">Thực đơn</a><a asp-controller="Home" asp-action="Privacy">Liên hệ</a></div>
             <div class="footer-nav"><strong>Hỗ trợ</strong><a asp-controller="Order" asp-action="Lookup">Tra cứu đơn hàng</a><a asp-controller="Home" asp-action="Privacy">Chính sách giao hàng</a><a asp-controller="Home" asp-action="Privacy">Điều khoản sử dụng</a></div>
-            <div class="footer-social"><strong>Kết nối với chúng tôi</strong><div class="footer-social-icons" aria-label="Mạng xã hội"> <span aria-label="Facebook">f</span><span aria-label="Instagram">◎</span><span aria-label="TikTok">♪</span><span aria-label="YouTube">▶</span></div></div>
+            <div class="footer-social"><strong>Kết nối với chúng tôi</strong><div class="footer-social-icons" aria-label="Facebook và email"> <a href="https://www.facebook.com/profile.php?id=61595121976507" target="_blank" rel="noopener noreferrer" aria-label="Facebook GaRan">f</a>@await Component.InvokeAsync("StoreContact", new { part = "email-icon" })</div></div>
             <a class="footer-order-cta" asp-controller="Product" asp-action="Index"><span class="footer-cta-icon">🛵</span><span><strong>Đặt món ngay</strong><small>Giao nhanh mỗi ngày</small></span><b>›</b></a>
         </div>
         <div class="container footer-bottom">
-            <span>© @DateTime.Now.Year GaRan. Tất cả quyền được bảo lưu.</span>
-            <span class="footer-payments" aria-label="Phương thức thanh toán"><b>COD</b><b>VietQR</b><b>NAPAS</b><b>ZaloPay</b></span>
+            <span>© @DateTime.Now.Year GaRan · Powered by GaRan</span>
+            <span class="footer-payments" aria-label="Phương thức thanh toán">
+                <span class="payment-method payment-cod" aria-label="Thanh toán khi nhận hàng COD">
+                    <svg viewBox="0 0 32 24" aria-hidden="true"><path d="M3 5h17v12H3zM20 9h5l4 4v4h-9z"/><path d="M7 19a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5Zm17 0a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5Z"/><path d="M8 8h7m-7 3h5"/></svg><b>COD</b>
+                </span>
+                <span class="payment-method payment-vietqr" aria-label="Thanh toán VietQR">
+                    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2 2h8v8H2zM14 2h8v8h-8zM2 14h8v8H2z"/><path class="qr-cutout" d="M5 5h2v2H5zm12 0h2v2h-2zM5 17h2v2H5z"/><path d="M14 13h3v3h-3zm5 0h3v3h-3zm-5 5h3v4h-3zm5 1h3v3h-3z"/></svg><b>VietQR</b>
+                </span>
+                <span class="payment-method payment-napas" aria-label="Thanh toán NAPAS"><b><i>N</i> NAPAS</b></span>
+                <span class="payment-method payment-zalopay" aria-label="Thanh toán ZaloPay"><b class="zalopay-mark">Z</b><b>ZaloPay</b></span>
+            </span>
         </div>
     </footer>
     <div id="customerToastHost" class="customer-toast-host" aria-live="polite" aria-atomic="false"></div>
