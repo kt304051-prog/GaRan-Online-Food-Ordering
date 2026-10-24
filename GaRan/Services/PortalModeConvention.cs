@@ -2,7 +2,6 @@ using Microsoft.AspNetCore.Mvc.ApplicationModels;
 
 namespace GaRan.Services;
 
-/// <summary>Limits each launched portal to the controllers and actions that belong to it.</summary>
 public sealed class PortalModeConvention(string mode) : IApplicationModelConvention
 {
     private static readonly HashSet<string> InternalAccountActions =

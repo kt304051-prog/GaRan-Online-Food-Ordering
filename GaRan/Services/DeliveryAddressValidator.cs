@@ -1,9 +1,5 @@
 namespace GaRan.Services;
 
-/// <summary>
-/// Rejects placeholder or incomplete street details before estimating or creating a delivery.
-/// This checks basic specificity only; it does not prove that an address exists.
-/// </summary>
 public static class DeliveryAddressValidator
 {
     public const string ErrorMessage = "Nhập số nhà kèm tên đường (ví dụ: 12 Nguyễn Trãi) hoặc tên đường đầy đủ.";

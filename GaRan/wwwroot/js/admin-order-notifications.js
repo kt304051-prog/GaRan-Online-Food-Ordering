@@ -170,7 +170,6 @@
             renderList();
             persist();
         } catch {
-            // Retry temporary network/database interruptions on the next polling cycle.
         } finally {
             busy = false;
         }

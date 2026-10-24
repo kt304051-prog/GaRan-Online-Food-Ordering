@@ -4,10 +4,6 @@ using Microsoft.EntityFrameworkCore;
 
 namespace GaRan.Services;
 
-/// <summary>
-/// Produces a simple, configurable area estimate for checkout. It deliberately does not
-/// call an external map provider or transmit customer addresses to a third party.
-/// </summary>
 public sealed class DeliveryDistanceService
 {
     private readonly IConfiguration _configuration;
@@ -52,8 +48,6 @@ public sealed class DeliveryDistanceService
         var freeDistance = settings?.MienPhiDenKm ?? _configuration.GetValue<decimal>("Delivery:FreeDistanceKm", 3m);
         if (maxDistance <= 0) return null;
 
-        // Keep the quote predictable and easy to administer with a value configured for
-        // same-ward and other-ward deliveries. This is an estimate, not routing.
         var originArea = ExtractWard(origin);
         var destinationArea = ExtractWard(deliveryArea);
         var sameWard = !string.IsNullOrWhiteSpace(originArea) &&

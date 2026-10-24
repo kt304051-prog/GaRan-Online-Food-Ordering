@@ -233,15 +233,9 @@ public class CartController : Controller
             ModelState.Remove(nameof(vm.QuoteTotal));
             ModelState.Remove(nameof(vm.QuoteAddress));
         }
-        // The posted quote is only a client-side preview. The order total, tax and shipping
-        // above are recalculated from server data, so malformed/stale preview fields must
-        // never prevent a valid order from being created.
         ModelState.Remove(nameof(vm.QuoteDistanceKm));
         ModelState.Remove(nameof(vm.QuoteTotal));
         ModelState.Remove(nameof(vm.QuoteAddress));
-        // These values are computed on the server and are not posted by the checkout form.
-        // With nullable reference types enabled, MVC can otherwise mark the unposted
-        // non-nullable strings as implicitly required and silently return the checkout view.
         ModelState.Remove(nameof(vm.DiaChiGiaoHang));
         ModelState.Remove(nameof(vm.DiaChiCuaHang));
         if (!ModelState.IsValid) return View(vm);

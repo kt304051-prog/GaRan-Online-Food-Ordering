@@ -93,7 +93,6 @@ public class PaymentController : Controller
         }
         catch (Exception ex) when (ex is HttpRequestException or TaskCanceledException or InvalidOperationException)
         {
-            // Avoid logging provider credentials or response bodies.
             HttpContext.RequestServices.GetRequiredService<ILogger<PaymentController>>()
                 .LogWarning("Could not start payOS checkout for order {OrderId}: {Reason}", orderId, ex.Message);
             TempData["Message"] = ex.Message;

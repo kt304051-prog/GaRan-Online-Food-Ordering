@@ -46,7 +46,6 @@ public sealed class PayOsService : IPayOsService
             throw new InvalidOperationException("Số tiền payOS phải là số nguyên VND lớn hơn 0.");
 
         var amount = decimal.ToInt64(order.TongTien);
-        // The description field is limited to 9 characters for some linked bank accounts.
         var description = $"DH{order.DonHangID}";
         if (description.Length > 9) description = order.DonHangID.ToString(CultureInfo.InvariantCulture);
         var signatureData = $"amount={amount}&cancelUrl={cancelUrl}&description={description}&orderCode={payOsOrderCode}&returnUrl={returnUrl}";

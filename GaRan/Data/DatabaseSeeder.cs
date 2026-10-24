@@ -343,8 +343,6 @@ BEGIN
         ALTER TABLE dbo.ThanhToans ADD PayOsOrderCode INT NULL;
 END");
 
-        // Run index creation in a separate batch so SQL Server recompiles after the
-        // PayOsOrderCode column has been added to an existing database.
         await context.Database.ExecuteSqlRawAsync(@"
 IF OBJECT_ID(N'dbo.ThanhToans', N'U') IS NOT NULL
    AND COL_LENGTH(N'dbo.ThanhToans', N'PayOsOrderCode') IS NOT NULL

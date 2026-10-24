@@ -145,7 +145,6 @@ public sealed class OrderEmailSender : IOrderEmailSender
             await client.ConnectAsync(host, port, socketOptions, cancellationToken);
             if (!string.IsNullOrWhiteSpace(username))
             {
-                // Gmail SMTP app passwords use LOGIN/PLAIN, not OAuth bearer tokens.
                 client.AuthenticationMechanisms.Remove("XOAUTH2");
                 await client.AuthenticateAsync(username, password ?? string.Empty, cancellationToken);
             }

@@ -213,7 +213,7 @@
                         if (message) message.textContent = 'Đã nhận được thanh toán. Cửa hàng đang xử lý đơn hàng.';
                         window.clearInterval(timer);
                     }
-                } catch { /* Retry on the next interval while the order page is open. */ }
+                } catch { }
             };
             const timer = window.setInterval(check, 5000);
             check();

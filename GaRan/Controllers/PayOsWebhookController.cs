@@ -116,7 +116,6 @@ public sealed class PayOsWebhookController : Controller
             else
                 _logger.LogInformation("payOS transaction {TransactionId} was confirmed for payment {PaymentId}.", providerTransactionId, payment!.ThanhToanID);
 
-            // A signed test payload is also sent when the merchant registers the webhook URL.
             return Ok(new { success = true });
         }
     }

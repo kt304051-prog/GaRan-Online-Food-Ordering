@@ -130,7 +130,6 @@ public class OrderController : Controller
     [HttpGet]
     public async Task<IActionResult> Confirmation(int id)
     {
-        // Guest checkout can view only the order created in this browser session.
         if (HttpContext.Session.GetInt32("ORDER_CONFIRMATION_ID") != id) return NotFound();
         var order = await _context.DonHangs.Include(x => x.KhachHang).Include(x => x.ChiTietDonHangs).ThenInclude(x => x.MonAn)
             .Include(x => x.ThanhToans).AsSplitQuery().FirstOrDefaultAsync(x => x.DonHangID == id);
